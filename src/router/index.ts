@@ -108,7 +108,9 @@ router.beforeEach(async (to, from, next) => {
       apiUrl.value = config.apiUrl;
       const conres = await paxios.get("/index/getAllConfig");
       if (conres.data.code == 0) {
-        custom.value.url = CompleteUrl(conres.data.data.custom.url)
+        if(conres.data.data.custom){
+          custom.value.url = CompleteUrl(conres.data.data.custom.url)
+        }
         hasWechat.value = conres.data.data.wechat;
       }
       const res1 = await paxios.get("/manage/adminInfo");

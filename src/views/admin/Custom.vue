@@ -5,7 +5,7 @@
                 <span>客服设置</span>
             </div>
         </template>
-        <el-form label-width="80px" v-loading="loading">
+        <el-form label-width="100px" v-loading="loading">
 
             <el-form-item label="客服二维码:">
                 <el-upload class="avatar-uploader" :auto-upload="false" :show-file-list="false" :on-change="handChange">

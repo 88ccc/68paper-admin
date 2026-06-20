@@ -19,7 +19,7 @@
       </div>
       <div class="relative z-10 flex flex-col justify-center items-center p-8 text-white">
         <div class="text-center max-w-md animate-fade-in">
-          <h1 class="text-4xl md-text-5xl font-bold mb-4 text-shadow">查重工具管理后台</h1>
+          <h1 class="text-4xl md-text-5xl font-bold mb-4 text-shadow">查重平台管理后台</h1>
           <h1 class="text-3xl md-text-4xl font-bold mb-4 text-shadow">欢迎回来</h1>
         </div>
       </div>
@@ -28,7 +28,7 @@
     <!-- 右侧登录表单区域 -->
     <div class="form-section">
       <div class="logo-container">
-        <h1 class="admin-title">查重工具管理后台</h1>
+        <h1 class="admin-title">查重平台管理后台</h1>
       </div>
       <div class="login-card">
         <h2 class="form-title">账号登录</h2>
@@ -64,7 +64,7 @@
 
 <script setup lang="ts">
 import { paxios } from '@/utils/paxios';
-import { ref, reactive ,onMounted} from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from "pinia"
 import { useAdminInfoStore } from "@/stores/adminInfo"
@@ -87,9 +87,10 @@ interface LoginResponse {
   data?: User;
 }
 
-onMounted(()=>{
-  if(isLogin){
-    router.push("/home");
+onMounted(async () => {
+  if (isLogin.value) {
+    console.log("已登录，跳转到主页");
+    router.push("/super/home");
   }
 })
 
@@ -148,7 +149,7 @@ const handleLogin = async (): Promise<void> => {
       isLogin.value = true;
       localStorage.setItem('adminid', res.data.data.id);
       localStorage.setItem('admintoken', res.data.data.token);
-      router.push("/home");
+      router.push("/super/home");
     } else {
       isLogin.value = false;
       ElMessage.error(res.data.msg);

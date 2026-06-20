@@ -14,14 +14,10 @@
                             <el-input v-model="searchForm.orderid" placeholder="请输入订单ID" clearable
                                 class="search-input" />
                         </el-col>
+                        
                         <el-col :xs="12" :sm="8" :lg="6">
                             <el-input v-model="searchForm.payid" placeholder="请输入支付ID" clearable class="search-input" />
                         </el-col>
-                        <el-col :xs="12" :sm="8" :lg="6">
-                            <el-input v-model="searchForm.shopid" placeholder="请输入店铺ID" clearable
-                                class="search-input" />
-                        </el-col>
-
                         <el-col :xs="6" :sm="8" :lg="2">
                             <el-button type="primary" @click="handleSearch" class="search-btn">
                                 <el-icon>
@@ -40,8 +36,7 @@
                             {{ getSystemName(scope.row.product_id) }}
                         </template>
                     </el-table-column>
-                    <el-table-column prop="userid" label="用户ID" min-width="120" align="center" />
-                    <el-table-column prop="payid" label="支付ID" min-width="120" align="center" />
+                    <el-table-column prop="spayid" label="支付ID" min-width="120" align="center" />
                     <el-table-column label="利润" min-width="140" align="center" :show-overflow-tooltip="true">
                         <template #default="scope">
                             成本:{{ scope.row.cost / 100 }} 元<br />
@@ -61,7 +56,7 @@
                         </template>
                     </el-table-column>
                     <el-table-column prop="create_time" label="提交时间" min-width="120" align="center" />
-                    
+                    <el-table-column prop="pay_time" label="支付时间" min-width="120" align="center" />
                     <el-table-column label="信息" min-width="140" align="center" :show-overflow-tooltip="true">
                         <template #default="scope">
                             <span v-show="scope.row.title">标题: {{ scope.row.title }}<br /></span>
@@ -75,15 +70,7 @@
                         </template>
                     </el-table-column>
                     <el-table-column prop="remark" label="备注" min-width="80" align="center" />
-                    <el-table-column label="操作" min-width="120" align="center">
-                        <template #default="scope">
-                            <el-button v-show="scope.row.status >= 4 && scope.row.status != 9" type="primary" text
-                                size="small" @click="orderRefund(scope.row)">
-                                退款
-                            </el-button>
 
-                        </template>
-                    </el-table-column>
                 </el-table>
                 <div class="pagination-container">
                     <el-pagination :pager-count="5" v-model:current-page="pagination.currentPage"
@@ -110,16 +97,15 @@ interface Pagination {
 interface SearchForm {
     orderid: string;
     payid: string;
-    shopid: string;
 }
 // 搜索表单数据
 const searchForm = reactive<SearchForm>({
     orderid: '',
     payid: "",
-    shopid: "",
 });
 
 const checkProducts = ref<any[]>([])
+
 
 function statustoStr(status: number) {
     if (status == 1) {
@@ -128,14 +114,10 @@ function statustoStr(status: number) {
         return "待付款";
     } else if (status == 3) {
         return "解析失败";
-    } else if (status == 4) {
-        return "用户支付成功";
-    } else if (status == 5) {
-        return "供货成功";
-    } else if (status == 6) {
-        return "供货成功";
+    } else if (status == 4 || status == 5 || status == 6) {
+        return "检测中";
     } else if (status == 7) {
-        return "供货失败";
+        return "检测失败";
     } else if (status == 8) {
         return "检测成功";
     } else if (status == 9) {
@@ -183,7 +165,7 @@ const pagination = reactive<Pagination>({
 const fetchProductList = async () => {
     try {
         loading.value = true;
-        let url = '/manage/getCheckOrderData?page=' + pagination.currentPage + '&limit=' + pagination.pageSize;
+        let url = '/console/getCheckOrderData?page=' + pagination.currentPage + '&limit=' + pagination.pageSize;
         let orderid = searchForm.orderid.trim();
         if (orderid.length > 1) {
             url = url + "&orderid=" + orderid;
@@ -192,12 +174,6 @@ const fetchProductList = async () => {
         if (payid.length > 1) {
             url = url + "&payid=" + payid;
         }
-        let shopid = searchForm.shopid.trim();
-        if (shopid.length > 1) {
-            url = url + "&shopid=" + shopid;
-        }
-
-
         const res = await paxios.get(url);
         if (res.data.code === 0) {
             tableData.value = res.data.data;
@@ -232,37 +208,6 @@ onMounted(async () => {
     }
     fetchProductList();
 });
-
-
-async function orderRefund(row: any) {
-    let msg = "订单" + row.id + ",支付id:" + row.payid + ",将退款 " + row.total_price / 100 + "元";
-    ElMessageBox.confirm(
-        msg,
-        '退款警告',
-        {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning',
-        }
-    )
-        .then(async () => {
-            try {
-                let res = await paxios.post("/manage/orderRefund", { orderid: row.id });
-                if (res.data.code == 0) {
-                    ElMessage.success("退款成功");
-                    fetchProductList();
-                } else {
-                    ElMessage.error(res.data.msg);
-                }
-            } catch (err) {
-                ElMessage.error("退款失败");
-            }
-        })
-        .catch(() => {
-
-        })
-
-}
 
 
 </script>

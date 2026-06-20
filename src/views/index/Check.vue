@@ -3,29 +3,21 @@
         <el-dialog v-model="dialogVisible" title="编辑产品" :width="dialogWidth" :close-on-click-modal="false" show-close>
             <el-form v-loading="dialogLoading" ref="ruleFormRef" :model="rwData" label-width="auto"
                 style="margin-top: 10px;">
-                <el-form-item label="产品id" prop="id">
-                    <el-input v-model="rwData.id" disabled />
-                </el-form-item>
                 <el-form-item label="产品名称" prop="name">
                     <el-input v-model="rwData.name" disabled />
                 </el-form-item>
-                <el-form-item label="成本价" prop="price">
+                <el-form-item label="供货价格" prop="cost">
                     <el-input type="number" v-model="rwData.cost" disabled>
                         <template #append>元/{{ unitstr }}</template>
                     </el-input>
                 </el-form-item>
-                <el-form-item label="供货价格" prop="price">
+
+                <el-form-item label="零售价" prop="price">
                     <el-input type="number" v-model="rwData.price">
                         <template #append>元/{{ unitstr }}</template>
                     </el-input>
-                </el-form-item>
-
-                <el-form-item label="最低零售价" prop="mini_price">
-                    <el-input type="number" v-model="rwData.mini_price">
-                        <template #append>元/{{ unitstr }}</template>
-                    </el-input>
                     <div class="el-form-item__error" style="position: static; color: #999;">
-                        提示：供货方最低零售价{{ rwData.low_price / 100 }}元/{{ unitstr }}
+                        提示：供货方最低零售价{{ rwData.mini_price }}元/{{ unitstr }}
                     </div>
                 </el-form-item>
 
@@ -35,14 +27,6 @@
                         <el-option label="正常" :value="1" />
                         <el-option label="禁用" :value="2" />
                     </el-select>
-                    <div class="el-form-item__error" style="position: static; color: #999;">
-                        提示：供货方状态 {{ rwData.supplier_status === 1 ? '正常' :
-                                    rwData.supplier_status === 2 ? '禁用' : '已删除' }}
-                    </div>
-                </el-form-item>
-
-                <el-form-item label="备注" prop="remark">
-                    <el-input v-model="rwData.remark" :rows="4" type="textarea" />
                 </el-form-item>
 
                 <el-form-item>
@@ -56,23 +40,16 @@
         <el-card v-loading="loading">
             <template #header>
                 <div class="card-header">
-                    <span>检测配置</span>
+                    <span>检测产品</span>
                 </div>
             </template>
-            <el-button @click="syncProduct" type="primary">同步货源</el-button>
             <div class="table-container">
                 <el-table :data="tableData" border stripe style="width: 100%" :cell-style="{ 'padding': '8px 5px' }"
                     :header-cell-style="{ 'padding': '10px 5px' }">
                     <el-table-column prop="name" label="产品名称" min-width="120" align="center" />
-                    <el-table-column label="成本" min-width="120" align="center" :show-overflow-tooltip="true">
-                        <template #default="scope">
-                            {{ scope.row.cost / 100 }}元/{{ convertNumberToUnit(scope.row.unit) }}
-
-                        </template>
-                    </el-table-column>
                     <el-table-column label="供货价" min-width="120" align="center" :show-overflow-tooltip="true">
                         <template #default="scope">
-                            {{ scope.row.price / 100 }}元/{{ convertNumberToUnit(scope.row.unit) }}
+                            {{ scope.row.cost / 100 }}元/{{ convertNumberToUnit(scope.row.unit) }}
                         </template>
                     </el-table-column>
 
@@ -81,16 +58,11 @@
                             {{ scope.row.mini_price / 100 }}元/{{ convertNumberToUnit(scope.row.unit) }}
                         </template>
                     </el-table-column>
-                    <el-table-column label="货源状态" min-width="80" align="center">
+                    <el-table-column label="零售价" min-width="120" align="center" :show-overflow-tooltip="true">
                         <template #default="scope">
-                            <el-tag :type="scope.row.supplier_status === 1 ? 'success' :
-                                scope.row.supplier_status === 2 ? 'danger' : 'warning'" size="small">
-                                {{ scope.row.supplier_status === 1 ? '正常' :
-                                    scope.row.supplier_status === 2 ? '禁用' : '已删除' }}
-                            </el-tag>
+                            {{ scope.row.price / 100 }}元/{{ convertNumberToUnit(scope.row.unit) }}
                         </template>
                     </el-table-column>
-
                     <el-table-column label="状态" min-width="80" align="center">
                         <template #default="scope">
                             <el-tag :type="scope.row.status === 1 ? 'success' :
@@ -106,9 +78,7 @@
                             <el-button type="primary" text size="small" @click="editProduct(scope.row)">
                                 编辑
                             </el-button>
-                            <el-button type="danger" text size="small" @click="deleteProduct(scope.row)">
-                                删除
-                            </el-button>
+                            
                         </template>
                     </el-table-column>
 
@@ -151,9 +121,7 @@ interface CheckItem {
     price: number;
     cost: number;
     unit: number;
-    low_price: number;
     mini_price: number;
-    supplier_status: number;
     status: number;
     remark: string;
 }
@@ -164,9 +132,7 @@ const rwData = ref<CheckItem>({
     price: 0,
     cost: 0,
     unit: 0,
-    low_price: 0,
     mini_price: 0,
-    supplier_status: 0,
     status: 1,
     remark: '',
 });
@@ -237,21 +203,16 @@ function getDecimalDigits(num: number): number {
 }
 
 async function handleSubmit() {
-    console.log(rwData.value.price, rwData.value.mini_price);
-    console.log(getDecimalDigits(rwData.value.price), getDecimalDigits(rwData.value.mini_price));
-    if (getDecimalDigits(rwData.value.price) > 2 || getDecimalDigits(rwData.value.mini_price) > 2) {
+   
+    if (getDecimalDigits(rwData.value.price) > 2) {
         ElMessage.error("价格最多只能有两位小数");
         return;
     }
-    
-    let price = Math.round(rwData.value.price * 100);
-    let mini_price = Math.round(rwData.value.mini_price * 100);
-    const res = await paxios.post("/manage/updateCheckProduct", {
+     let price = Math.round(rwData.value.price * 100);
+    const res = await paxios.post("/console/updateCheckProduct", {
         id: rwData.value.id,
         price: price,
-        mini_price: mini_price,
-        status: rwData.value.status,
-        remark: rwData.value.remark
+        status: rwData.value.status
     });
     if(res.data.code === 0) {
         ElMessage.success("更新成功");
@@ -264,64 +225,17 @@ async function handleSubmit() {
 }
 
 
-async function deleteProduct(row: any) {
-    ElMessageBox.confirm(
-        '删除后，所有该产品的配置都会被删除',
-        '警告',
-        {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning',
-        }
-    )
-        .then(async () => {
-            try {
-                loading.value = true;
-                let res = await paxios.post("/manage/deleteCheckProduct", { id: row.id });
-                if (res.data.code != 0) {
-                    ElMessage.error(res.data.msg);
-                    loading.value = false;
-                    return;
-                }
-                fetchProductList();
-            } catch (error) {
-                loading.value = false;
-            }
-        })
-        .catch(() => {
 
-        })
-}
 
 
 // 表格数据
 const tableData = ref<any[]>([]);
 
-
-async function syncProduct() {
-    try {
-        loading.value = true;
-        let res = await paxios.get("/manage/syncCheckSystem");
-        if (res.data.code != 0) {
-            ElMessage.error(res.data.msg);
-            loading.value = false;
-            return;
-        }
-
-    } catch (error) {
-        ElMessage.error("同步货源失败");
-        loading.value = false;
-    }
-
-    fetchProductList();
-
-}
-
 // 获取列表数据
 const fetchProductList = async () => {
     try {
         loading.value = true;
-        let url = '/manage/getCheckData?page=' + pagination.currentPage + '&limit=' + pagination.pageSize;
+        let url = '/console/getCheckData?page=' + pagination.currentPage + '&limit=' + pagination.pageSize;
         const res = await paxios.get(url);
         if (res.data.code === 0) {
             tableData.value = res.data.data;

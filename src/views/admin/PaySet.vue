@@ -1,4 +1,5 @@
 <template>
+  <el-config-provider :locale="zhCn">
   <div class="pay-config-container" v-loading="loading">
     <!-- H5端配置 -->
     <el-card header="H5端" class="pay-card">
@@ -119,11 +120,13 @@
       <el-button type="primary" @click="handleSubmit">提交</el-button>
     </div>
   </div>
+  </el-config-provider>
 </template>
 
 <script lang="ts" setup>
 import { paxios } from '@/utils/paxios';
 import { ref, onMounted } from 'vue';
+import zhCn from 'element-plus/es/locale/lang/zh-cn'
 
 let payModes = <any[]>[];
 let paySets = <any[]>[];
@@ -169,7 +172,7 @@ const wechatPayments = ref<any[]>([]);
 onMounted(async () => {
   loading.value = true;
   try {
-    const res = await paxios.get('/manage/getPayMode?page=1&limit=50');
+    const res = await paxios.get('/manage/getAllPayMode');
     if (res.data.code === 0) {
       payModes = res.data.data;
       modeSplit();

@@ -88,7 +88,7 @@ onMounted(()=>{
             }
            
         } else {
-            ElMessage.error(res.data.msg);
+            storageType.value = "local";
         }
     }).finally(() => { loading.value = false })
 })

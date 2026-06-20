@@ -4,13 +4,55 @@ import { storeToRefs } from "pinia"
 import { paxios } from '@/utils/paxios'
 import { CompleteUrl } from '@/utils/utils'
 import { useAdminInfoStore } from "@/stores/adminInfo"
+import { useUserInfoStore } from "@/stores/userinfo"
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      //后台
       path: '/',
+      component: () => import('@/views/index/Index.vue'),
+      children: [
+        {
+          //后台首页
+          path: "",
+          component: () => import("@/views/index/Login.vue"),
+        },{
+          path:"home",
+          component: () => import("@/views/index/Home.vue"),
+        },{
+          path:"user",
+          component: () => import("@/views/index/UserInfo.vue"),
+        },{
+          path:"money",
+          component: () => import("@/views/index/Money.vue"),
+        },{
+          path:"check",
+          component: () => import("@/views/index/Check.vue"),
+        },{
+          path:"attachment",
+          component: () => import("@/views/index/Attachment.vue"),
+        },{
+          path:"checkurl",
+          component: () => import("@/views/index/CheckUrl.vue"),
+        },{
+          path:"check_record",
+          component: () => import("@/views/index/CheckOrder.vue"),
+        },{
+          path:"customer",
+          component: () => import("@/views/index/Customer.vue"),
+        },{
+          path:"withdraw",
+          component: () => import("@/views/index/Withdraw.vue"),
+        },{
+          path:"withdraw_record",
+          component: () => import("@/views/index/WithdrawRecord.vue"),
+        }
+      ]
+
+    }, {
+      //后台
+      path: '/super',
       component: () => import('@/views/admin/Index.vue'),
       children: [
         {
@@ -21,7 +63,7 @@ const router = createRouter({
           //后台首页
           path: "home",
           component: () => import("@/views/admin/Home.vue"),
-        },{
+        }, {
           //检测记录
           path: "checkorder",
           component: () => import("@/views/admin/CheckOrder.vue"),
@@ -33,6 +75,18 @@ const router = createRouter({
           //客服设置
           path: "custom",
           component: () => import("@/views/admin/Custom.vue"),
+        }, {
+          //邮箱设置
+          path: "emailset",
+          component: () => import("@/views/admin/EmailSet.vue"),
+        }, {
+          //短信设置
+          path: "smsset",
+          component: () => import("@/views/admin/SmsSet.vue"),
+        }, {
+          //登录注册设置
+          path: "loginset",
+          component: () => import("@/views/admin/LoginSet.vue"),
         }, {
           //支付模板
           path: "paymode",
@@ -54,20 +108,25 @@ const router = createRouter({
         }, {
           path: "check",
           component: () => import("@/views/admin/Check.vue"),
-        }, 
+        },
         {
-          path: "shop",
-          component: () => import("@/views/admin/Shop.vue"),
-        }, {
-          path: "shopd",
-          component: () => import("@/views/admin/shop/Index.vue"),
-          children: [
-            {
-              //后台首页
-              path: "",
-              component: () => import("@/views/admin/shop/Home.vue"),
-            }
-          ]
+          path: "agent",
+          component: () => import("@/views/admin/Agent.vue"),
+        },{
+          path:"attachlist",
+          component: () => import("@/views/admin/AttachList.vue"),
+        },{
+          path:"notice",
+          component: () => import("@/views/admin/Notice.vue"),
+        },{
+          path:"withdraw",
+          component: () => import("@/views/admin/Withdraw.vue"),
+        },{
+          path:"withdraw_set",
+          component: () => import("@/views/admin/WithdrawSet.vue"),
+        },{
+          path:"webset",
+          component: () => import("@/views/admin/WebSet.vue"),
         }
 
       ]
@@ -97,8 +156,9 @@ const setFavicon = (iconPath: string) => {
 
 // 路由守卫：进入页面前置处理
 router.beforeEach(async (to, from, next) => {
-  const { website, custom, webIsInit, apiUrl, hasWechat } = storeToRefs(useWebsitConfigStore());
+  const { website, custom, hasEmail, hasSms, webIsInit, apiUrl, loginRegister, hasWechat,frontend } = storeToRefs(useWebsitConfigStore());
   const adminInfo = storeToRefs(useAdminInfoStore());
+  const userinfo = storeToRefs(useUserInfoStore());
   const route = useRoute();
 
   try {
@@ -108,28 +168,49 @@ router.beforeEach(async (to, from, next) => {
       apiUrl.value = config.apiUrl;
       const conres = await paxios.get("/index/getAllConfig");
       if (conres.data.code == 0) {
-        if(conres.data.data.custom){
+        if (conres.data.data.custom && conres.data.data.custom.url) {
           custom.value.url = CompleteUrl(conres.data.data.custom.url)
         }
+        if (conres.data.data.loginRegister && conres.data.data.loginRegister.regList) {
+          loginRegister.value.regList = conres.data.data.loginRegister.regList;
+        }
+        if(conres.data.data.website){
+          website.value.name = conres.data.data.website.webName;
+          website.value.logo = CompleteUrl(conres.data.data.website.webLogo);
+          website.value.favicon = CompleteUrl(conres.data.data.website.webFavicon);
+          setFavicon(website.value.favicon);
+        }
+        hasEmail.value = conres.data.data.email;
+        hasSms.value = conres.data.data.sms;
         hasWechat.value = conres.data.data.wechat;
+        frontend.value = conres.data.data.frontend;
       }
-      const res1 = await paxios.get("/manage/adminInfo");
-      if (res1.data.code == 0) {
-        adminInfo.adminId.value = res1.data.data.id;
-        adminInfo.name.value = res1.data.data.name;
-        adminInfo.avatar.value = res1.data.data.avatar;
-        adminInfo.isLogin.value = true;
+
+      if (to.path.startsWith('/super')) {
+        const res = await paxios.get("/manage/adminInfo");
+        if (res.data.code == 0) {
+          adminInfo.adminId.value = res.data.data.id;
+          adminInfo.name.value = res.data.data.name;
+          adminInfo.avatar.value = res.data.data.avatar;
+          adminInfo.isLogin.value = true;
+        }
+      } else {
+        const res = await paxios.get("/console/userInfo");
+        if (res.data.code == 0) {
+          userinfo.userId.value = res.data.data.id;
+          userinfo.userName.value = res.data.data.name;
+          userinfo.userEmail.value = res.data.data.email;
+          userinfo.userPhone.value = res.data.data.phone;
+          userinfo.userAvatar.value = res.data.data.avatar;
+          userinfo.isLogin.value = true;
+          userinfo.domain.value = res.data.data.domain;
+        }
+
       }
+
 
       webIsInit.value = true;
 
-    }
-
-    if (!adminInfo.isLogin.value) {
-      if (to.path != "/") {
-        next("/");
-        return;
-      }
     }
 
     next();

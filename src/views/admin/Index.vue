@@ -9,8 +9,7 @@ import { Refresh } from "@element-plus/icons-vue"
 const noAsideModel = ref(true);
 const showAside = ref(true);
 const showAsideBt = ref(true);
-const adminInfoStore = useAdminInfoStore();
-const { isLogin, avatar } = storeToRefs(adminInfoStore);
+const { isLogin, avatar } = storeToRefs(useAdminInfoStore());
 const viewKey = ref(1);
 
 // 控制移动端菜单显示状态
@@ -47,10 +46,15 @@ onMounted(async () => {
   window.addEventListener('resize', handleResize);
 });
 
+function showLoginReg() {
+   router.push('/super/')
+
+}
+
 
 
 watch(() => route.path, (newPath, oldPath) => {
-  if (newPath != "/") {
+  if (newPath != "/super" && newPath != "/super/") {
     noAsideModel.value = false;
   } else {
     noAsideModel.value = true;
@@ -64,7 +68,7 @@ watch(() => route.path, (newPath, oldPath) => {
 
 function tologout() {
   adminLogout()
-  router.push('/')
+  router.push('/super')
 }
 
 function showAsideChange() {
@@ -85,7 +89,7 @@ function showAsideChange() {
         <el-icon @click="showAsideChange" v-show="showAside" :size="35">
           <Fold />
         </el-icon>
-        <div class="header-logo">查重工具管理后台</div>
+        <div class="header-logo">查重平台管理后台</div>
 
         <!-- 桌面端按钮区域 - 大屏显示 -->
         <div class="header-buttons desktop-buttons">
@@ -104,6 +108,7 @@ function showAsideChange() {
               </el-dropdown-menu>
             </template>
           </el-dropdown>
+          <el-button type="primary" v-if="!isLogin" @click="showLoginReg">登录/注册</el-button>
         </div>
       </el-header>
       <el-container style="height: 100%;">
@@ -111,11 +116,17 @@ function showAsideChange() {
           <div class="aside-container">
             <el-menu :default-active="route.path" class="aside-menu" background-color="#f5f7fa" text-color="#333"
               active-text-color="#3b82f6" router :unique-opened="true">
-              <el-menu-item index="/home" class="menu-item">
+              <el-menu-item index="/super/home">
                 <el-icon class="menu-icon">
                   <pi-worktable />
                 </el-icon>
                 <span>工作台</span>
+              </el-menu-item>
+               <el-menu-item index="/super/agent">
+                <el-icon class="menu-icon">
+                  <Avatar />
+                </el-icon>
+                <span>代理管理</span>
               </el-menu-item>
               <el-sub-menu index="1">
                 <template #title>
@@ -124,7 +135,7 @@ function showAsideChange() {
                   </el-icon>
                   <span>订单管理</span>
                 </template>
-                <el-menu-item index="/checkorder" class="menu-item">
+                <el-menu-item index="/super/checkorder">
                   <el-icon class="menu-icon">
                     <Memo />
                   </el-icon>
@@ -138,7 +149,7 @@ function showAsideChange() {
                   </el-icon>
                   <span>微信公众号</span>
                 </template>
-                <el-menu-item index="/wechatset" class="menu-item">
+                <el-menu-item index="/super/wechatset">
                   <el-icon class="menu-icon">
                     <Setting />
                   </el-icon>
@@ -154,19 +165,50 @@ function showAsideChange() {
                   </el-icon>
                   <span>网站管理</span>
                 </template>
-                <el-menu-item index="/storage" class="menu-item">
+                <el-menu-item index="/super/webset">
+                  <el-icon class="menu-icon">
+                    <Basketball />
+                  </el-icon>
+                  <span>网站设置</span>
+                </el-menu-item>
+                <el-menu-item index="/super/storage">
                   <el-icon class="menu-icon">
                     <Coin />
                   </el-icon>
                   <span>存储设置</span>
                 </el-menu-item>
-                <el-menu-item index="/custom" class="menu-item">
+                <el-menu-item index="/super/custom">
                   <el-icon class="menu-icon">
                     <pi-cso />
                   </el-icon>
                   <span>客服设置</span>
                 </el-menu-item>
+                <el-menu-item index="/super/emailset">
+                  <el-icon class="menu-icon">
+                    <Message />
+                  </el-icon>
+                  <span>邮箱设置</span>
+                </el-menu-item>
+                <el-menu-item index="/super/smsset">
+                  <el-icon class="menu-icon">
+                    <Phone />
+                  </el-icon>
+                  <span>短信设置</span>
+                </el-menu-item>
+                <el-menu-item index="/super/loginset">
+                  <el-icon class="menu-icon">
+                    <Position />
+                  </el-icon>
+                  <span>注册设置</span>
+                </el-menu-item>
+                <el-menu-item index="/super/withdraw_set">
+                  <el-icon class="menu-icon">
+                    <CreditCard />
+                  </el-icon>
+                  <span>提现设置</span>
+                </el-menu-item>
               </el-sub-menu>
+              
 
               <el-sub-menu index="4">
                 <template #title>
@@ -175,13 +217,13 @@ function showAsideChange() {
                   </el-icon>
                   <span>支付管理</span>
                 </template>
-                <el-menu-item index="/paymode" class="menu-item">
+                <el-menu-item index="/super/paymode">
                   <el-icon class="menu-icon">
                     <Money />
                   </el-icon>
                   <span>支付模板</span>
                 </el-menu-item>
-                <el-menu-item index="/payset" class="menu-item">
+                <el-menu-item index="/super/payset">
                   <el-icon class="menu-icon">
                     <Setting />
                   </el-icon>
@@ -195,7 +237,7 @@ function showAsideChange() {
                   </el-icon>
                   <span>系统管理</span>
                 </template>
-                <el-menu-item index="/manager" class="menu-item">
+                <el-menu-item index="/super/manager">
                   <el-icon class="menu-icon">
                     <User />
                   </el-icon>
@@ -209,7 +251,7 @@ function showAsideChange() {
                   </el-icon>
                   <span>秘钥配置</span>
                 </template>
-                <el-menu-item index="/checkkey" class="menu-item">
+                <el-menu-item index="/super/checkkey">
                   <el-icon class="menu-icon">
                     <IceCreamRound />
                   </el-icon>
@@ -221,20 +263,32 @@ function showAsideChange() {
                   <el-icon>
                     <Grid />
                   </el-icon>
-                  <span>应用管理</span>
+                  <span>产品管理</span>
                 </template>
-                <el-menu-item index="/check" class="menu-item">
+                <el-menu-item index="/super/check">
                   <el-icon class="menu-icon">
                     <CollectionTag />
                   </el-icon>
                   <span>查重查AI</span>
                 </el-menu-item>
               </el-sub-menu>
-              <el-menu-item index="/shop" class="menu-item">
+              <el-menu-item index="/super/attachlist">
                 <el-icon class="menu-icon">
-                  <ShoppingCart />
+                  <Paperclip />
                 </el-icon>
-                <span>店铺管理</span>
+                <span>附件管理</span>
+              </el-menu-item>
+              <el-menu-item index="/super/notice">
+                <el-icon class="menu-icon">
+                  <ChatDotRound />
+                </el-icon>
+                <span>代理公告</span>
+              </el-menu-item>
+              <el-menu-item index="/super/withdraw">
+                <el-icon class="menu-icon">
+                  <Tickets />
+                </el-icon>
+                <span>提现处理</span>
               </el-menu-item>
             </el-menu>
           </div>
@@ -269,14 +323,6 @@ function showAsideChange() {
 .aside-menu {
   border-right: none;
   height: calc(100% - 16px);
-}
-
-.menu-item {
-  height: 50px;
-  margin-bottom: 4px;
-  border-radius: 4px;
-  margin-left: 8px;
-  margin-right: 8px;
 }
 
 .menu-icon {

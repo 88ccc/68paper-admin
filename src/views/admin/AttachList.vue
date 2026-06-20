@@ -1,9 +1,32 @@
 <template>
     <el-config-provider :locale="zhCn">
+        <el-dialog v-model="dialogStatusVisible" title="审核附件" :width="dialogWidth" :close-on-click-modal="false"
+            show-close>
+            <div v-loading="dialogLoading">
+                用户ID: {{ editrow.userid }}<br /><br />
+                文件名称:{{ editrow.file_name }}&nbsp;&nbsp;<el-button type="primary" size="small" @click="download">下载</el-button><br /><br />
+                <el-form label-width="auto">
+                    <el-form-item label="状态:">
+                        <el-select v-model="editrow.file_status" placeholder="请选择状态" style="width: 240px"
+                            class="search-select">
+                            <el-option label="待审核" :value="1" />
+                            <el-option label="审核通过" :value="2" />
+                            <el-option label="审核失败" :value="3" />
+                            <el-option label="永久禁用" :value="4" />
+                        </el-select>
+                    </el-form-item>
+
+                    <el-form-item>
+                        <el-button @click="handleStatus" type="primary">提交</el-button>
+                        <el-button @click="dialogStatusVisible = false" type="info">取消</el-button>
+                    </el-form-item>
+                </el-form>
+            </div>
+        </el-dialog>
         <el-card>
             <template #header>
                 <div class="card-header">
-                    <span>检测记录</span>
+                    <span>附件管理</span>
                 </div>
             </template>
             <div class="table-container">
@@ -11,15 +34,16 @@
                     <el-row :gutter="16">
                         <!-- 响应式配置：大屏幕6列，平板8列，手机12列（占满整行） -->
                         <el-col :xs="12" :sm="8" :lg="6">
-                            <el-input v-model="searchForm.orderid" placeholder="请输入订单ID" clearable
+                            <el-input v-model="searchForm.userid" placeholder="请输入用户ID" clearable
                                 class="search-input" />
                         </el-col>
                         <el-col :xs="12" :sm="8" :lg="6">
-                            <el-input v-model="searchForm.payid" placeholder="请输入支付ID" clearable class="search-input" />
-                        </el-col>
-                        <el-col :xs="12" :sm="8" :lg="6">
-                            <el-input v-model="searchForm.shopid" placeholder="请输入店铺ID" clearable
-                                class="search-input" />
+                            <el-select v-model="searchForm.status" placeholder="请选择状态" clearable class="search-select">
+                                <el-option label="待审核" value="1" />
+                                <el-option label="审核通过" value="2" />
+                                <el-option label="审核失败" value="3" />
+                                <el-option label="永久禁用" value="4" />
+                            </el-select>
                         </el-col>
 
                         <el-col :xs="6" :sm="8" :lg="2">
@@ -34,52 +58,19 @@
                 </div>
                 <el-table :data="tableData" border stripe style="width: 100%" v-loading="loading"
                     :cell-style="{ 'padding': '8px 5px' }" :header-cell-style="{ 'padding': '10px 5px' }">
-                    <el-table-column prop="id" label="订单号" min-width="140" align="center" :show-overflow-tooltip="true">
-                        <template #default="scope">
-                            {{ scope.row.id }}<br />
-                            {{ getSystemName(scope.row.product_id) }}
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="userid" label="用户ID" min-width="120" align="center" />
-                    <el-table-column prop="payid" label="支付ID" min-width="120" align="center" />
-                    <el-table-column label="利润" min-width="140" align="center" :show-overflow-tooltip="true">
-                        <template #default="scope">
-                            成本:{{ scope.row.cost / 100 }} 元<br />
-                            利润:{{ scope.row.profit / 100 }}元
-                        </template>
-                    </el-table-column>
-                    <el-table-column label="售价" min-width="140" align="center" :show-overflow-tooltip="true">
-                        <template #default="scope">
-                            单价:{{ scope.row.unit_price / 100 }} 元<br />
-                            总价:{{ scope.row.total_price / 100 }}元
-                        </template>
-                    </el-table-column>
-                    <el-table-column label="字数" min-width="120" align="center">
-                        <template #default="scope">
-                            字数: {{ scope.row.words }}<br />
-                            件数: {{ scope.row.piece }}
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="create_time" label="提交时间" min-width="120" align="center" />
-                    
-                    <el-table-column label="信息" min-width="140" align="center" :show-overflow-tooltip="true">
-                        <template #default="scope">
-                            <span v-show="scope.row.title">标题: {{ scope.row.title }}<br /></span>
-                            <span v-show="scope.row.author">作者:{{ scope.row.author }}</span>
-                            <span v-show="scope.row.end_date">发表日期:{{ scope.row.end_date }}</span>
-                        </template>
-                    </el-table-column>
+                    <el-table-column prop="userid" label="用户ID" min-width="80" align="center" />
+                    <el-table-column prop="file_name" label="文件名" min-width="100" align="center"
+                        :show-overflow-tooltip="true" />
+                    <el-table-column prop="file_time" label="上传时间" min-width="120" align="center" />
                     <el-table-column label="状态" min-width="100" align="center">
                         <template #default="scope">
-                            {{ statustoStr(scope.row.status) }}
+                            {{ statusstr(scope.row.file_status) }}
                         </template>
                     </el-table-column>
-                    <el-table-column prop="remark" label="备注" min-width="80" align="center" />
                     <el-table-column label="操作" min-width="120" align="center">
                         <template #default="scope">
-                            <el-button v-show="scope.row.status >= 4 && scope.row.status != 9" type="primary" text
-                                size="small" @click="orderRefund(scope.row)">
-                                退款
+                            <el-button type="warning" text size="small" @click="toAudit(scope.row)">
+                                审核
                             </el-button>
 
                         </template>
@@ -96,10 +87,24 @@
     </el-config-provider>
 </template>
 <script setup lang="ts">
+import { useRouter, useRoute } from 'vue-router'
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import { paxios } from '@/utils/paxios'
-import type { FormInstance, FormRules } from 'element-plus'
+import { useWebsitConfigStore } from '@/stores/websitConfig';
+let websitConfigStore = useWebsitConfigStore()
+const { apiUrl } = websitConfigStore
+
+const router = useRouter()
+const dialogStatusVisible = ref(false);
+const dialogWidth = ref('600px')
+const dialogLoading = ref(false);
+const editrow = ref({
+    userid: 0,
+    file_name: '',
+    file_time: '',
+    file_status: 0,
+});
 // 定义分页类型
 interface Pagination {
     currentPage: number;
@@ -108,52 +113,24 @@ interface Pagination {
 }
 // 定义搜索表单类型
 interface SearchForm {
-    orderid: string;
-    payid: string;
-    shopid: string;
+    userid: string;
+    status: string;
 }
 // 搜索表单数据
 const searchForm = reactive<SearchForm>({
-    orderid: '',
-    payid: "",
-    shopid: "",
+    userid: "",
+    status: "",
 });
 
-const checkProducts = ref<any[]>([])
+const handleResize = () => {
+    if (window.innerWidth < 768) {
+        dialogWidth.value = "92%";
+    } else {
+        dialogWidth.value = "600px";
 
-function statustoStr(status: number) {
-    if (status == 1) {
-        return "解析中";
-    } else if (status == 2) {
-        return "待付款";
-    } else if (status == 3) {
-        return "解析失败";
-    } else if (status == 4) {
-        return "用户支付成功";
-    } else if (status == 5) {
-        return "供货成功";
-    } else if (status == 6) {
-        return "供货成功";
-    } else if (status == 7) {
-        return "供货失败";
-    } else if (status == 8) {
-        return "检测成功";
-    } else if (status == 9) {
-        return "已经退款"
-    } else if (status == 10) {
-        return "报告删除"
     }
-    return "";
-}
+};
 
-const getSystemName = (system: string) => {
-    for (var i = 0; i < checkProducts.value.length; i++) {
-        if (checkProducts.value[i].id === system) {
-            return checkProducts.value[i].name
-        }
-    }
-    return '';
-}
 
 const handleSizeChange = (size: number) => {
     pagination.pageSize = size;
@@ -183,20 +160,15 @@ const pagination = reactive<Pagination>({
 const fetchProductList = async () => {
     try {
         loading.value = true;
-        let url = '/manage/getCheckOrderData?page=' + pagination.currentPage + '&limit=' + pagination.pageSize;
-        let orderid = searchForm.orderid.trim();
-        if (orderid.length > 1) {
-            url = url + "&orderid=" + orderid;
+        let url = '/manage/getAttachData?page=' + pagination.currentPage + '&limit=' + pagination.pageSize;
+        let userid = searchForm.userid.trim();
+        if (userid.length >= 1) {
+            url = url + "&userid=" + userid;
         }
-        let payid = searchForm.payid.trim();
-        if (payid.length > 1) {
-            url = url + "&payid=" + payid;
+        let status = searchForm.status.trim();
+        if (status.length >= 1) {
+            url = url + "&status=" + status;
         }
-        let shopid = searchForm.shopid.trim();
-        if (shopid.length > 1) {
-            url = url + "&shopid=" + shopid;
-        }
-
 
         const res = await paxios.get(url);
         if (res.data.code === 0) {
@@ -206,8 +178,8 @@ const fetchProductList = async () => {
             ElMessage.error(res.data.msg);
         }
     } catch (error) {
-        ElMessage.error('获取检测记录列表失败');
-        console.error('获取检测记录列表错误:', error);
+        ElMessage.error('获取文章列表失败');
+        console.error('获取文章列表错误:', error);
     } finally {
         loading.value = false;
     }
@@ -219,51 +191,65 @@ function handleSearch() {
 
 
 onMounted(async () => {
-    try {
-        let url = '/index/getCheckIdAndName';
-        const res1 = await paxios.get(url);
-        if (res1.data.code === 0) {
-            checkProducts.value = res1.data.data;
-        } else {
-            ElMessage.error(res1.data.msg);
-        }
-    } catch (err) {
-        ElMessage.error("获取产品信息失败");
-    }
+    handleResize();
+    window.addEventListener('resize', handleResize);
     fetchProductList();
 });
+onUnmounted(() => {
+    window.removeEventListener('resize', handleResize);
+});
+function toAudit(row: any | null) {
+    editrow.value.userid = row.userid;
+    editrow.value.file_name = row.file_name;
 
+    editrow.value.file_time = row.file_time;
 
-async function orderRefund(row: any) {
-    let msg = "订单" + row.id + ",支付id:" + row.payid + ",将退款 " + row.total_price / 100 + "元";
-    ElMessageBox.confirm(
-        msg,
-        '退款警告',
-        {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning',
-        }
-    )
-        .then(async () => {
-            try {
-                let res = await paxios.post("/manage/orderRefund", { orderid: row.id });
-                if (res.data.code == 0) {
-                    ElMessage.success("退款成功");
-                    fetchProductList();
-                } else {
-                    ElMessage.error(res.data.msg);
-                }
-            } catch (err) {
-                ElMessage.error("退款失败");
-            }
-        })
-        .catch(() => {
+    editrow.value.file_status = row.file_status;
 
-        })
+    dialogStatusVisible.value = true;
 
 }
 
+function statusstr(status: number) {
+    if (status == 0) {
+        return "未上传";
+    } else if (status == 1) {
+        return "待审核";
+    } else if (status == 2) {
+        return "审核通过";
+    } else if (status == 3) {
+        return "审核失败";
+    } else if (status == 4) {
+        return "永久禁用";
+    } else {
+        return "未知状态";
+    }
+}
+
+async function handleStatus() {
+    try{
+        dialogLoading.value = true;
+
+        const res = await paxios.post('/manage/attachAudit',{userid:editrow.value.userid,status:editrow.value.file_status});
+
+        if (res.data.code === 0) {
+            dialogStatusVisible.value = false;
+            ElMessage.success('操作成功');
+            fetchProductList();
+        } else {
+            ElMessage.error(res.data.msg);
+        }
+
+    }catch(err){
+        ElMessage.error('操作失败');
+    }finally{
+        dialogLoading.value = false;
+    }
+}
+
+function download(){
+    window.open(apiUrl + '/index/down_attachment?id=' + editrow.value.userid);
+}
 
 </script>
 <style scoped>

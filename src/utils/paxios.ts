@@ -1,13 +1,9 @@
 import axios from 'axios';
 import { useWebsitConfigStore } from '@/stores/websitConfig';
 import { useAdminInfoStore } from "@/stores/adminInfo";
+import { useUserInfoStore } from "@/stores/userinfo";
 
 let baseURL = "";
-
-
-
-
-
 // 创建axios实例
 export const paxios = axios.create({
     timeout: 120000, // 设置请求超时时间
@@ -37,6 +33,9 @@ paxios.interceptors.request.use(function (config: any) {
     if (config.url.startsWith("/manage")) {
         token = localStorage.getItem('admintoken');
         userid = localStorage.getItem('adminid');
+    }else if (config.url.startsWith("/console")) {
+        token = localStorage.getItem('token');
+        userid = localStorage.getItem('userid');
     }
     config.url = baseURL + config.url
     if (token) {
@@ -55,9 +54,18 @@ paxios.interceptors.request.use(function (config: any) {
 // 添加响应拦截器
 paxios.interceptors.response.use(function (response) {
     if (response.status === 401) {
-        localStorage.removeItem('admintoken');
-        localStorage.removeItem('adminid');
-        useAdminInfoStore().resetAdminInfo();
+       let url = new URL(response.request.responseURL);
+        if (url.pathname.startsWith("/manage")) {
+            // console.log("管理员登录失效");
+            localStorage.removeItem('admintoken');
+            localStorage.removeItem('adminid');
+            useAdminInfoStore().resetAdminInfo();
+        } else if (url.pathname.startsWith("/console")) {
+            // console.log("用户登录失效");
+            localStorage.removeItem('token');
+            localStorage.removeItem('userid');
+            useUserInfoStore().resetUserInfo();
+        }
     }
     return response;
 }, function (error) {

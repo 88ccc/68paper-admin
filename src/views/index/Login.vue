@@ -219,7 +219,7 @@ const router = useRouter();
 
 
 const { loginRegister, hasEmail, hasSms } = storeToRefs(useWebsitConfigStore());
-const { isLogin, userId, userName, userEmail, userPhone, userAvatar, openid } = storeToRefs(useUserInfoStore());
+const { isLogin, userId, userName, userEmail, userPhone, userAvatar, domain , openid } = storeToRefs(useUserInfoStore());
 
 let userTid = 0;
 const articleVisible = ref<boolean>(false);
@@ -765,6 +765,7 @@ const handleLogin = async () => {
             userEmail.value = res.data.data.email;
             userPhone.value = res.data.data.phone;
             userAvatar.value = res.data.data.avatar;
+            domain.value = res.data.data.domain;
             isLogin.value = true;
             localStorage.setItem('userid', res.data.data.id);
             localStorage.setItem('token', res.data.data.token);

@@ -26,10 +26,10 @@ export function CompleteUrl(url: string) {
     if (url == "") {
         return "";
     }
-    if(url == undefined || url == null || (typeof url !== "string")){
+    if (url == undefined || url == null || (typeof url !== "string")) {
         return "";
     }
-    if (url.startsWith("http://") || url.startsWith("https://)")) {
+    if (url.startsWith("http:") || url.startsWith("https:")) {
         return url;
     } else {
         return apiUrl + url;

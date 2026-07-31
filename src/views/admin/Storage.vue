@@ -49,7 +49,7 @@
             </el-form-item>
         </el-form>
 
-        <template #footer><el-text size="small">设置用户文件的存储方式，包含用户的头像，用户上传的文件和用户的报告</el-text></template>
+        <template #footer><el-text size="small">设置用户文件的存储方式，包含用户的报告</el-text></template>
     </el-card>
 </template>
 <script setup lang="ts">

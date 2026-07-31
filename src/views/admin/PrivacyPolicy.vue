@@ -2,12 +2,9 @@
   <el-card>
     <template #header>
       <div class="card-header">
-        <span>公告</span>
+        <span>隐私协议</span>
       </div>
     </template>
-    <div style="margin-bottom: 15px;">
-      这个公告会展示在用户后台首页
-    </div>
     <div style="border: 1px solid #ccc" v-loading="loading">
       <Toolbar style="border-bottom: 1px solid #ccc" :editor="editorRef" :defaultConfig="toolbarConfig" :mode="mode" />
       <Editor style="height: 500px; overflow-y: hidden;" v-model="valueHtml" :defaultConfig="editorConfig" :mode="mode"
@@ -36,7 +33,7 @@ const valueHtml = ref('')
 // 模拟 ajax 异步获取内容
 onMounted(() => {
   loading.value = true
-  paxios.get('/index/getNotice').then(res => {
+  paxios.get('/index/getPrivacyPolicy').then(res => {
     if (res.data.code == 0) {
       valueHtml.value = res.data.data;
     }
@@ -63,7 +60,7 @@ const handleCreated = (editor: any) => {
 function onSubmit() {
   //把valueHtml提交上去
   loading.value = true
-  paxios.post("/manage/setNotice", { content: valueHtml.value }).then(res => {
+  paxios.post("/manage/setPrivacyPolicy", { content: valueHtml.value }).then(res => {
     if (res.data.code == 0) {
       ElMessage.success(res.data.msg);
     } else {

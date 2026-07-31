@@ -29,44 +29,12 @@
                 </el-form>
             </div>
         </el-dialog>
-        <el-dialog v-model="dialogBalanceVisible" title="修改用户余额" :width="dialogWidth" :close-on-click-modal="false"
-            show-close>
-            <div>
-                用户ID：{{ editBalanceId }}<br />
-                用户当前余额：{{ editBalanceData / 100 }}元<br />
-                输入负数是减少，输入正数是增加,单位元
-                <el-form v-loading="dialogLoading" style="width: 100%;padding-top: 18px;">
-                    <el-form-item label="类型:">
-                        <el-select v-model="balanceEditType" placeholder="请选择类型" style="width: 240px"
-                            class="search-select">
-                            <el-option label="充值" value="1" />
-                            <el-option label="消费" value="2" />
-                            <el-option label="退款" value="3" />
-                            <el-option label="赠送" value="4" />
-                            <el-option label="提现" value="5" />
-                            <el-option label="其他" value="6" />
-
-                        </el-select>
-                    </el-form-item>
-                    <el-form-item label="金额:">
-                        <el-input type="number" v-model="editamount" clearable />
-                    </el-form-item>
-                    <el-form-item label="备注:">
-                        <el-input v-model="balanceRemark" :autosize="{ minRows: 4, maxRows: 8 }" type="textarea" />
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="primary" @click="handleBalance">提交</el-button>
-                    </el-form-item>
-                </el-form>
-            </div>
-        </el-dialog>
+        
         <el-dialog v-model="dialogNameVisible" title="修改代理姓名" :width="dialogWidth" :close-on-click-modal="false"
             show-close>
             <div>
-                用户ID：{{ editBalanceId }}<br />
-               
+                用户ID：{{ editNameId }}<br />
                 <el-form v-loading="dialogLoading" style="width: 100%;padding-top: 18px;">
-                   
                     <el-form-item label="姓名:">
                         <el-input type="text" v-model="newName" clearable />
                     </el-form-item>
@@ -111,6 +79,7 @@
                 <el-table :data="tableData" border stripe style="width: 100%" v-loading="loading"
                     :cell-style="{ 'padding': '8px 5px' }" :header-cell-style="{ 'padding': '10px 5px' }">
                     <el-table-column prop="id" label="用户ID" min-width="80" align="center" />
+                    <el-table-column prop="tid" label="邀请人" min-width="80" align="center" />
                     <el-table-column label="帐号" min-width="140" align="center" :show-overflow-tooltip="true">
                         <template #default="scope">
                             <span v-if="scope.row.mobile">{{ scope.row.mobile }}<br /></span>
@@ -124,11 +93,10 @@
                     </el-table-column>
                     <el-table-column prop="status" label="状态" min-width="100" align="center">
                         <template #default="scope">
-                            <el-tag :type="scope.row.status === 1 ? 'success' :
-                                scope.row.status === 2 ? 'danger' : 'warning'" size="small">
-                                {{ scope.row.status === 1 ? '正常' :
-                                    scope.row.status === 2 ? '禁用' : '未激活' }}
-                            </el-tag>
+                            <el-tag v-if="scope.row.status === 1" type="success">正常</el-tag>
+                            <el-tag v-if="scope.row.status === 2" type="warning">禁用</el-tag>
+                            <el-tag v-if="scope.row.status === 3" type="danger">注销</el-tag>
+                           
                         </template>
                     </el-table-column>
                     <el-table-column prop="name" label="姓名" min-width="80" align="center" />
@@ -139,9 +107,6 @@
                         <template #default="scope">
                             <el-button type="primary" text size="small" @click="statusEdit(scope.row)">
                                 状态
-                            </el-button>
-                            <el-button type="primary" text size="small" @click="balanceEdit(scope.row)">
-                                金额
                             </el-button>
                             <el-button type="primary" text size="small" @click="nameEdit(scope.row)">
                                 姓名
@@ -175,13 +140,6 @@ const editStatusId = ref(0);
 const editStatusStatus = ref(0);
 const newStatus = ref(0);
 const statusRemark = ref("");
-
-const dialogBalanceVisible = ref(false);
-const editBalanceId = ref(0);
-const editBalanceData = ref(0);
-const editamount = ref(0);
-const balanceRemark = ref("");
-const balanceEditType = ref("");
 
 
 const dialogNameVisible = ref(false);
@@ -360,57 +318,13 @@ async function handleStatus() {
 
 }
 
-// 修改金额
-const balanceEdit = (row: any) => {
-    dialogLoading.value = false;
-    dialogBalanceVisible.value = true;
-    editBalanceId.value = row.id;
-    editBalanceData.value = row.balance;
-    editamount.value = 0;
-    balanceRemark.value = "";
-    balanceEditType.value = "";
-};
-
 // 修改姓名
 const nameEdit = (row: any) => {
     dialogLoading.value = false;
     dialogNameVisible.value = true;
-    editBalanceId.value = row.id;
+    editNameId.value = row.id;
     newName.value = row.name;
 };
-
-async function handleBalance() {
-    if (editamount.value == 0) {
-        dialogBalanceVisible.value = false;
-        return;
-    }
-    const inputStr = String(editamount.value).trim();
-    const validPattern = /^-?\d+(\.\d{1,2})?$/;
-    if (!validPattern.test(inputStr)) {
-        ElMessage.error('输入格式错误！仅允许正负整数、正负1位小数或正负2位小数的有效数字');
-        return;
-    }
-    if (balanceEditType.value == "") {
-        ElMessage.error('类型必须选择');
-        return;
-    }
-    const num = Number(inputStr);
-    const amount = Math.round(num * 100); //单位分
-    try {
-        dialogLoading.value = true;
-        const res = await paxios.post("/manage/editUserBalance", { id: editBalanceId.value, amount: amount, remark: balanceRemark.value, type: balanceEditType.value });
-        if (res.data.code != 0) {
-            ElMessage.error(res.data.msg);
-        }
-        fetchUserList();
-        dialogLoading.value = false;
-        dialogBalanceVisible.value = false;
-    } catch (error) {
-        dialogLoading.value = false;
-        dialogBalanceVisible.value = false;
-    }
-
-}
 
 async function handleName() {
     if (newName.value.trim() == "") {
@@ -419,7 +333,7 @@ async function handleName() {
     }
     try {
         dialogLoading.value = true;
-        const res = await paxios.post("/manage/editUserName", { id: editBalanceId.value, name: newName.value });
+        const res = await paxios.post("/manage/editUserName", { id: editNameId.value, name: newName.value });
         if (res.data.code != 0) {
             ElMessage.error(res.data.msg);
         } else {

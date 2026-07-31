@@ -21,6 +21,14 @@
 
             <!-- 昵称设置 -->
             <div class="profile-item">
+                <span class="item-label">用户ID</span>
+                <div class="item-content">
+                    <span class="info-text">{{ userId }}</span>
+                </div>
+            </div>
+
+            <!-- 昵称设置 -->
+            <div class="profile-item">
                 <span class="item-label">姓名</span>
                 <div class="item-content">
                     <span class="info-text">{{ userName }}</span>

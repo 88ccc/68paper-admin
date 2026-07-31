@@ -47,7 +47,7 @@ onMounted(async () => {
 });
 
 function showLoginReg() {
-   router.push('/super/')
+  router.push('/super/')
 
 }
 
@@ -122,13 +122,41 @@ function showAsideChange() {
                 </el-icon>
                 <span>工作台</span>
               </el-menu-item>
-               <el-menu-item index="/super/agent">
-                <el-icon class="menu-icon">
-                  <Avatar />
-                </el-icon>
-                <span>代理管理</span>
-              </el-menu-item>
               <el-sub-menu index="1">
+                <template #title>
+                  <el-icon>
+                    <Avatar />
+                  </el-icon>
+                  <span>用户管理</span>
+                </template>
+                <el-menu-item index="/super/agent">
+                  <el-icon class="menu-icon">
+                    <Memo />
+                  </el-icon>
+                  <span>用户列表</span>
+                </el-menu-item>
+                <el-menu-item index="/super/userbalance">
+                  <el-icon class="menu-icon">
+                    <SetUp />
+                  </el-icon>
+                  <span>余额增减</span>
+                </el-menu-item>
+                <el-menu-item index="/super/userpoints">
+                  <el-icon class="menu-icon">
+                    <SetUp />
+                  </el-icon>
+                  <span>积分增减</span>
+                </el-menu-item>
+                <el-menu-item index="/super/deleteuser">
+                  <el-icon class="menu-icon">
+                    <Delete />
+                  </el-icon>
+                  <span>删除用户</span>
+                </el-menu-item>
+                
+
+              </el-sub-menu>
+              <el-sub-menu index="2">
                 <template #title>
                   <el-icon>
                     <GoodsFilled />
@@ -141,24 +169,30 @@ function showAsideChange() {
                   </el-icon>
                   <span>检测记录</span>
                 </el-menu-item>
+                <el-menu-item index="/super/checkcard">
+                  <el-icon class="menu-icon">
+                    <Postcard />
+                  </el-icon>
+                  <span>检测卡</span>
+                </el-menu-item>
               </el-sub-menu>
-              <el-sub-menu index="2">
+              <el-sub-menu index="3">
                 <template #title>
                   <el-icon>
                     <pi-wxpublic />
                   </el-icon>
-                  <span>微信公众号</span>
+                  <span>微信服务号</span>
                 </template>
                 <el-menu-item index="/super/wechatset">
                   <el-icon class="menu-icon">
                     <Setting />
                   </el-icon>
-                  <span>公众号设置</span>
+                  <span>服务号设置</span>
                 </el-menu-item>
-               
+
               </el-sub-menu>
 
-              <el-sub-menu index="3">
+              <el-sub-menu index="4">
                 <template #title>
                   <el-icon>
                     <pi-websit />
@@ -201,16 +235,54 @@ function showAsideChange() {
                   </el-icon>
                   <span>注册设置</span>
                 </el-menu-item>
+                <el-menu-item index="/super/useragree">
+                  <el-icon class="menu-icon">
+                    <Paperclip />
+                  </el-icon>
+                  <span>用户协议</span>
+                </el-menu-item>
+                <el-menu-item index="/super/privacypolicy">
+                  <el-icon class="menu-icon">
+                    <Paperclip />
+                  </el-icon>
+                  <span>隐私政策</span>
+                </el-menu-item>
+
+              </el-sub-menu>
+              <el-sub-menu index="5">
+                <template #title>
+                  <el-icon>
+                    <Position />
+                  </el-icon>
+                  <span>营销管理</span>
+                </template>
+                <el-menu-item index="/super/saleweb">
+                  <el-icon class="menu-icon">
+                    <ShoppingTrolley />
+                  </el-icon>
+                  <span>检测链接</span>
+                </el-menu-item>
                 <el-menu-item index="/super/withdraw_set">
                   <el-icon class="menu-icon">
                     <CreditCard />
                   </el-icon>
                   <span>提现设置</span>
                 </el-menu-item>
+                <el-menu-item index="/super/invite">
+                  <el-icon class="menu-icon">
+                    <User />
+                  </el-icon>
+                  <span>邀请设置</span>
+                </el-menu-item>
+                <el-menu-item index="/super/agiso">
+                  <el-icon class="menu-icon">
+                    <Connection />
+                  </el-icon>
+                  <span>阿索奇</span>
+                </el-menu-item>
               </el-sub-menu>
-              
 
-              <el-sub-menu index="4">
+              <el-sub-menu index="6">
                 <template #title>
                   <el-icon>
                     <CreditCard />
@@ -230,7 +302,7 @@ function showAsideChange() {
                   <span>支付设置</span>
                 </el-menu-item>
               </el-sub-menu>
-              <el-sub-menu index="5">
+              <el-sub-menu index="7">
                 <template #title>
                   <el-icon>
                     <Setting />
@@ -243,8 +315,26 @@ function showAsideChange() {
                   </el-icon>
                   <span>管理员</span>
                 </el-menu-item>
+                <el-menu-item index="/super/notice">
+                  <el-icon class="menu-icon">
+                    <ChatDotRound />
+                  </el-icon>
+                  <span>系统公告</span>
+                </el-menu-item>
+                <el-menu-item index="/super/cachemanage">
+                  <el-icon class="menu-icon">
+                    <MessageBox />
+                  </el-icon>
+                  <span>缓存管理</span>
+                </el-menu-item>
+                <el-menu-item index="/super/function">
+                  <el-icon class="menu-icon">
+                    <Tools />
+                  </el-icon>
+                  <span>功能设置</span>
+                </el-menu-item>
               </el-sub-menu>
-              <el-sub-menu index="6">
+              <el-sub-menu index="8">
                 <template #title>
                   <el-icon>
                     <Key />
@@ -258,7 +348,7 @@ function showAsideChange() {
                   <span>检测秘钥</span>
                 </el-menu-item>
               </el-sub-menu>
-              <el-sub-menu index="7">
+              <el-sub-menu index="9">
                 <template #title>
                   <el-icon>
                     <Grid />
@@ -271,25 +361,40 @@ function showAsideChange() {
                   </el-icon>
                   <span>查重查AI</span>
                 </el-menu-item>
+                <el-menu-item index="/super/producttips">
+                  <el-icon class="menu-icon">
+                    <CollectionTag />
+                  </el-icon>
+                  <span>产品提示</span>
+                </el-menu-item>
               </el-sub-menu>
-              <el-menu-item index="/super/attachlist">
-                <el-icon class="menu-icon">
-                  <Paperclip />
-                </el-icon>
-                <span>附件管理</span>
-              </el-menu-item>
-              <el-menu-item index="/super/notice">
-                <el-icon class="menu-icon">
-                  <ChatDotRound />
-                </el-icon>
-                <span>代理公告</span>
-              </el-menu-item>
-              <el-menu-item index="/super/withdraw">
-                <el-icon class="menu-icon">
-                  <Tickets />
-                </el-icon>
-                <span>提现处理</span>
-              </el-menu-item>
+              <el-sub-menu index="10">
+                <template #title>
+                  <el-icon>
+                    <Coordinate />
+                  </el-icon>
+                  <span>审批管理</span>
+                </template>
+                <el-menu-item index="/super/attachlist">
+                  <el-icon class="menu-icon">
+                    <Paperclip />
+                  </el-icon>
+                  <span>附件管理</span>
+                </el-menu-item>
+                <el-menu-item index="/super/withdraw">
+                  <el-icon class="menu-icon">
+                    <Tickets />
+                  </el-icon>
+                  <span>提现处理</span>
+                </el-menu-item>
+                <el-menu-item index="/super/usernotice">
+                  <el-icon class="menu-icon">
+                    <Notification />
+                  </el-icon>
+                  <span>公告审核</span>
+                </el-menu-item>
+              </el-sub-menu>
+
             </el-menu>
           </div>
         </el-aside>

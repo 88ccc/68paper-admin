@@ -33,8 +33,6 @@
                     <el-button type="primary" @click="handleSubmit">提交</el-button>
                     <el-button @click="dialogVisible = false">取消</el-button>
                 </el-form-item>
-
-
             </el-form>
         </el-dialog>
         <el-card v-loading="loading">
@@ -46,16 +44,22 @@
             <div class="table-container">
                 <el-table :data="tableData" border stripe style="width: 100%" :cell-style="{ 'padding': '8px 5px' }"
                     :header-cell-style="{ 'padding': '10px 5px' }">
+                    <el-table-column prop="id" label="产品ID" min-width="100" align="center" />
                     <el-table-column prop="name" label="产品名称" min-width="120" align="center" />
                     <el-table-column label="供货价" min-width="120" align="center" :show-overflow-tooltip="true">
                         <template #default="scope">
-                            {{ scope.row.cost / 100 }}元/{{ convertNumberToUnit(scope.row.unit) }}
+                            {{ scope.row.cost / 100 }}元/{{ convertNumberToUnit(scope.row.punit) }}
+                        </template>
+                    </el-table-column>
+                    <el-table-column v-if="reward_enabled" label="邀请奖励" min-width="120" align="center" :show-overflow-tooltip="true">
+                        <template #default="scope">
+                            {{ scope.row.reward / 100 }}元/{{ convertNumberToUnit(scope.row.punit) }}
                         </template>
                     </el-table-column>
 
                     <el-table-column label="最低零售价" min-width="120" align="center" :show-overflow-tooltip="true">
                         <template #default="scope">
-                            {{ scope.row.mini_price / 100 }}元/{{ convertNumberToUnit(scope.row.unit) }}
+                            {{ scope.row.mini_price / 100 }}元/{{ convertNumberToUnit(scope.row.punit) }}
                         </template>
                     </el-table-column>
                     <el-table-column label="零售价" min-width="120" align="center" :show-overflow-tooltip="true">
@@ -78,7 +82,7 @@
                             <el-button type="primary" text size="small" @click="editProduct(scope.row)">
                                 编辑
                             </el-button>
-                            
+
                         </template>
                     </el-table-column>
 
@@ -97,7 +101,11 @@
 import { ref, onMounted, reactive, onUnmounted } from 'vue'
 import { paxios } from '@/utils/paxios'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
+import { useSaleWebStore } from '@/stores/saleWebConfig'
+import { storeToRefs } from "pinia"
+
 const loading = ref(false);
+  const { reward_enabled } = storeToRefs(useSaleWebStore());
 
 // 定义分页类型
 interface Pagination {
@@ -121,6 +129,7 @@ interface CheckItem {
     price: number;
     cost: number;
     unit: number;
+    punit: number;
     mini_price: number;
     status: number;
     remark: string;
@@ -132,6 +141,7 @@ const rwData = ref<CheckItem>({
     price: 0,
     cost: 0,
     unit: 0,
+    punit: 0,
     mini_price: 0,
     status: 1,
     remark: '',
@@ -183,7 +193,7 @@ function editProduct(row: any) {
     rwData.value.cost = Math.round(row.cost / 100 * 100) / 100;
     rwData.value.price = Math.round(row.price / 100 * 100) / 100;
     rwData.value.mini_price = Math.round(row.mini_price / 100 * 100) / 100;
-    unitstr.value = convertNumberToUnit(row.unit);
+    unitstr.value = convertNumberToUnit(row.punit);
     dialogVisible.value = true;
 }
 
@@ -203,18 +213,20 @@ function getDecimalDigits(num: number): number {
 }
 
 async function handleSubmit() {
-   
+
     if (getDecimalDigits(rwData.value.price) > 2) {
         ElMessage.error("价格最多只能有两位小数");
         return;
     }
-     let price = Math.round(rwData.value.price * 100);
+    let price = Math.round(rwData.value.price * 100);
+    
+    
     const res = await paxios.post("/console/updateCheckProduct", {
         id: rwData.value.id,
         price: price,
         status: rwData.value.status
     });
-    if(res.data.code === 0) {
+    if (res.data.code === 0) {
         ElMessage.success("更新成功");
         dialogVisible.value = false;
         fetchProductList();

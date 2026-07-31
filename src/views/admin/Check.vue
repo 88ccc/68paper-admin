@@ -19,7 +19,11 @@
                         <template #append>元/{{ unitstr }}</template>
                     </el-input>
                 </el-form-item>
-
+                <el-form-item v-if="hasInvite" label="邀请奖励" prop="reward">
+                    <el-input type="number" v-model="rwData.reward">
+                        <template #append>元/{{ unitstr }}</template>
+                    </el-input>
+                </el-form-item>
                 <el-form-item label="最低零售价" prop="mini_price">
                     <el-input type="number" v-model="rwData.mini_price">
                         <template #append>元/{{ unitstr }}</template>
@@ -37,7 +41,7 @@
                     </el-select>
                     <div class="el-form-item__error" style="position: static; color: #999;">
                         提示：供货方状态 {{ rwData.supplier_status === 1 ? '正常' :
-                                    rwData.supplier_status === 2 ? '禁用' : '已删除' }}
+                            rwData.supplier_status === 2 ? '禁用' : '已删除' }}
                     </div>
                 </el-form-item>
 
@@ -73,6 +77,11 @@
                     <el-table-column label="供货价" min-width="120" align="center" :show-overflow-tooltip="true">
                         <template #default="scope">
                             {{ scope.row.price / 100 }}元/{{ convertNumberToUnit(scope.row.unit) }}
+                        </template>
+                    </el-table-column>
+                    <el-table-column v-if="hasInvite" label="邀请奖励" min-width="120" align="center" :show-overflow-tooltip="true">
+                        <template #default="scope">
+                            {{ scope.row.reward / 100 }}元/{{ convertNumberToUnit(scope.row.unit) }}
                         </template>
                     </el-table-column>
 
@@ -145,10 +154,12 @@ const dialogVisible = ref(false)
 const dialogWidth = ref('600px')
 const dialogLoading = ref(false)
 const unitstr = ref("");
+const hasInvite = ref(false);
 interface CheckItem {
     id: string;
     name: string;
     price: number;
+    reward: number;
     cost: number;
     unit: number;
     low_price: number;
@@ -162,6 +173,7 @@ const rwData = ref<CheckItem>({
     id: '',
     name: '',
     price: 0,
+    reward:0,
     cost: 0,
     unit: 0,
     low_price: 0,
@@ -216,6 +228,7 @@ function editProduct(row: any) {
     rwData.value = { ...row };
     rwData.value.cost = Math.round(row.cost / 100 * 100) / 100;
     rwData.value.price = Math.round(row.price / 100 * 100) / 100;
+    rwData.value.reward = Math.round(row.reward / 100 * 100) / 100;
     rwData.value.mini_price = Math.round(row.mini_price / 100 * 100) / 100;
     unitstr.value = convertNumberToUnit(row.unit);
     dialogVisible.value = true;
@@ -239,21 +252,29 @@ function getDecimalDigits(num: number): number {
 async function handleSubmit() {
     console.log(rwData.value.price, rwData.value.mini_price);
     console.log(getDecimalDigits(rwData.value.price), getDecimalDigits(rwData.value.mini_price));
-    if (getDecimalDigits(rwData.value.price) > 2 || getDecimalDigits(rwData.value.mini_price) > 2) {
+    if (getDecimalDigits(rwData.value.price) > 2 || getDecimalDigits(rwData.value.mini_price) > 2 || getDecimalDigits(rwData.value.reward) > 2) {
         ElMessage.error("价格最多只能有两位小数");
         return;
     }
-    
+
     let price = Math.round(rwData.value.price * 100);
+    let reward = Math.round(rwData.value.reward * 100);
+    let cost = Math.round(rwData.value.cost * 100);
+    let lir = price - cost - reward;
+    if(lir <0){
+        ElMessage.error("供货价必须大于成本价和邀请奖励之和");
+        return;
+    }
     let mini_price = Math.round(rwData.value.mini_price * 100);
     const res = await paxios.post("/manage/updateCheckProduct", {
         id: rwData.value.id,
         price: price,
         mini_price: mini_price,
+        reward: reward,
         status: rwData.value.status,
         remark: rwData.value.remark
     });
-    if(res.data.code === 0) {
+    if (res.data.code === 0) {
         ElMessage.success("更新成功");
         dialogVisible.value = false;
         fetchProductList();
@@ -351,6 +372,12 @@ onMounted(async () => {
     handleResize();
     window.addEventListener('resize', handleResize);
     fetchProductList();
+    let res = await paxios.get("/index/getInviteConfig");
+    if (res.data.code == 0) {
+        let str = res.data.data.enable;
+        const val = String(str).trim().toLowerCase();
+        hasInvite.value = (val === 'true');
+    }
 })
 onUnmounted(() => {
     window.removeEventListener('resize', handleResize);

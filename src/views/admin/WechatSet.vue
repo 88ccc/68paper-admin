@@ -2,7 +2,7 @@
     <el-card>
         <template #header>
             <div class="card-header">
-                <span>公众号设置</span>
+                <span>服务号设置</span>
             </div>
         </template>
         <el-form label-width="auto" v-loading="loading">

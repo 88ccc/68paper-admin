@@ -53,7 +53,7 @@
                 </el-icon>
                 <span>工作台</span>
               </el-menu-item>
-              
+
               <el-menu-item index="/money">
                 <el-icon class="menu-icon">
                   <Coin />
@@ -72,44 +72,142 @@
                 </el-icon>
                 <span>检测记录</span>
               </el-menu-item>
-              
-              <el-menu-item index="/attachment">
-                <el-icon class="menu-icon">
-                  <Paperclip />
-                </el-icon>
-                <span>附件管理</span>
-              </el-menu-item>
+
+
               <el-menu-item index="/checkurl">
                 <el-icon class="menu-icon">
                   <Share />
                 </el-icon>
                 <span>检测链接</span>
               </el-menu-item>
-             <el-menu-item index="/customer">
+
+              <el-menu-item v-if="functions.msgsub" index="/subscribemsg">
                 <el-icon class="menu-icon">
-                  <Avatar />
+                  <Bell />
                 </el-icon>
-                <span>客服设置</span>
+                <span>消息订阅</span>
               </el-menu-item>
-              <el-menu-item index="/withdraw">
-                <el-icon class="menu-icon">
-                  <CreditCard />
-                </el-icon>
-                <span>提现申请</span>
-              </el-menu-item>
-              <el-menu-item index="/withdraw_record">
-                <el-icon class="menu-icon">
-                  <Tickets />
-                </el-icon>
-                <span>提现记录</span>
-              </el-menu-item>
-            
-              <el-menu-item index="/user">
-                <el-icon class="menu-icon">
-                  <User />
-                </el-icon>
-                <span>用户中心</span>
-              </el-menu-item>
+
+              <el-sub-menu index="1">
+                <template #title>
+                  <el-icon>
+                    <Setting />
+                  </el-icon>
+                  <span>设置管理</span>
+                </template>
+                <el-menu-item v-if="functions.attach" index="/attachment">
+                  <el-icon class="menu-icon">
+                    <Paperclip />
+                  </el-icon>
+                  <span>附件管理</span>
+                </el-menu-item>
+                <el-menu-item index="/customer">
+                  <el-icon class="menu-icon">
+                    <Avatar />
+                  </el-icon>
+                  <span>客服设置</span>
+                </el-menu-item>
+
+                <el-menu-item index="/payset">
+                  <el-icon class="menu-icon">
+                    <CreditCard />
+                  </el-icon>
+                  <span>支付方式</span>
+                </el-menu-item>
+                <el-menu-item index="/otherset">
+                  <el-icon class="menu-icon">
+                    <Operation />
+                  </el-icon>
+                  <span>其他设置</span>
+                </el-menu-item>
+                <el-menu-item v-if="functions.notice" index="/noticeconfig">
+                  <el-icon class="menu-icon">
+                    <Bell />
+                  </el-icon>
+                  <span>公告设置</span>
+                </el-menu-item>
+                <el-menu-item index="/user">
+                  <el-icon class="menu-icon">
+                    <User />
+                  </el-icon>
+                  <span>用户中心</span>
+                </el-menu-item>
+              </el-sub-menu>
+              <el-sub-menu index="2">
+                <template #title>
+                  <el-icon>
+                    <Briefcase />
+                  </el-icon>
+                  <span>提现管理</span>
+                </template>
+                <el-menu-item index="/withdraw">
+                  <el-icon class="menu-icon">
+                    <CreditCard />
+                  </el-icon>
+                  <span>提现申请</span>
+                </el-menu-item>
+                <el-menu-item index="/withdraw_record">
+                  <el-icon class="menu-icon">
+                    <Tickets />
+                  </el-icon>
+                  <span>提现记录</span>
+                </el-menu-item>
+              </el-sub-menu>
+              <el-sub-menu v-if="reward_enabled" index="3">
+                <template #title>
+                  <el-icon>
+                    <Avatar />
+                  </el-icon>
+                  <span>代理管理</span>
+                </template>
+                <el-menu-item index="/invite">
+                  <el-icon class="menu-icon">
+                    <Coordinate />
+                  </el-icon>
+                  <span>招募代理</span>
+                </el-menu-item>
+                <el-menu-item index="/invitedata">
+                  <el-icon class="menu-icon">
+                    <Tickets />
+                  </el-icon>
+                  <span>代理数据</span>
+                </el-menu-item>
+              </el-sub-menu>
+              <el-sub-menu v-if="functions.extensions" index="4">
+                <template #title>
+                  <el-icon>
+                    <Crop />
+                  </el-icon>
+                  <span>扩展功能</span>
+                </template>
+                <el-menu-item index="/points">
+                  <el-icon class="menu-icon">
+                    <Discount />
+                  </el-icon>
+                  <span>积分充值</span>
+                </el-menu-item>
+                <el-menu-item index="/pointsrecord">
+                  <el-icon class="menu-icon">
+                    <Tickets />
+                  </el-icon>
+                  <span>积分记录</span>
+                </el-menu-item>
+                <el-menu-item index="/checkcard">
+                  <el-icon class="menu-icon">
+                    <Postcard />
+                  </el-icon>
+                  <span>检测卡</span>
+                </el-menu-item>
+                <el-menu-item v-if="ecommerce" index="/cardkey">
+                  <el-icon class="menu-icon">
+                    <ShoppingBag />
+                  </el-icon>
+                  <span>绑定电商</span>
+                </el-menu-item>
+              </el-sub-menu>
+
+
+
             </el-menu>
           </div>
         </el-aside>
@@ -131,14 +229,14 @@ import { storeToRefs } from "pinia"
 import ContactService from '@/components/ContactService.vue'
 import { useWebsitConfigStore } from '@/stores/websitConfig';
 import { useUserInfoStore } from '@/stores/userinfo';
-import { setCookie } from '@/utils/cookie';
+import { useSaleWebStore } from '@/stores/saleWebConfig'
 import { getBrowserType } from '@/utils/browser';
 import { paxios } from '@/utils/paxios';
 import { userLogout } from '@/utils/utils';
 import { Refresh } from "@element-plus/icons-vue"
 
 const { isLogin, userId, userName, userEmail, userPhone, userAvatar, openid } = storeToRefs(useUserInfoStore());
-
+const { reward_enabled, functions,ecommerce } = storeToRefs(useSaleWebStore());
 const route = useRoute();
 const { website } = storeToRefs(useWebsitConfigStore());
 const noNavModel = ref(false);
@@ -175,8 +273,9 @@ const handleResize = () => {
 }
 
 
-watch(() => route.path, (newPath:any, oldPath:any) => {
-  if (newPath != "/index" && newPath != "/" && newPath != "/index/") {
+watch(() => route.path, (newPath: any, oldPath: any) => {
+  console.log("路由变化:", newPath, oldPath);
+  if (newPath != "/index" && newPath != "/" && newPath != "/index/" && (!newPath.startsWith("/login"))) {
     noNavModel.value = false;
   } else {
     noNavModel.value = true;
@@ -206,19 +305,7 @@ onMounted(async () => {
   handleResize()
   window.addEventListener('resize', handleResize)
   try {
-    let userTid = 0;
 
-    let tmp = route.params.tid as string
-    userTid = parseInt(tmp)
-    if (Number.isNaN(userTid)) {
-      userTid = 0
-    }
-    if (userTid < 0) {
-      userTid = 0
-    }
-    if (userTid > 0) {
-      setCookie('tid', userTid.toString(), 7);
-    }
     const browserType = getBrowserType();
     console.log("当前浏览器类型:", browserType);
     if (browserType == 'wechat') {
@@ -256,7 +343,12 @@ onMounted(async () => {
         if (res.data.code == 0) {
           window.location.href = res.data.data.url;
         } else {
-          console.log(res.data.msg);
+          let localtopenid = localStorage.getItem('openid');
+          if (localtopenid) {
+            openid.value = localtopenid;
+          } else {
+            //ElMessage.error(res.data.msg)
+          }
         }
       }
 

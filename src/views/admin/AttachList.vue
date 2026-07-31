@@ -4,7 +4,8 @@
             show-close>
             <div v-loading="dialogLoading">
                 用户ID: {{ editrow.userid }}<br /><br />
-                文件名称:{{ editrow.file_name }}&nbsp;&nbsp;<el-button type="primary" size="small" @click="download">下载</el-button><br /><br />
+                文件名称:{{ editrow.file_name }}&nbsp;&nbsp;<el-button type="primary" size="small"
+                    @click="download">下载</el-button><br /><br />
                 <el-form label-width="auto">
                     <el-form-item label="状态:">
                         <el-select v-model="editrow.file_status" placeholder="请选择状态" style="width: 240px"
@@ -165,7 +166,8 @@ const fetchProductList = async () => {
         if (userid.length >= 1) {
             url = url + "&userid=" + userid;
         }
-        let status = searchForm.status.trim();
+        let status = searchForm.status ?? "";
+        status = status.trim();
         if (status.length >= 1) {
             url = url + "&status=" + status;
         }
@@ -227,10 +229,10 @@ function statusstr(status: number) {
 }
 
 async function handleStatus() {
-    try{
+    try {
         dialogLoading.value = true;
 
-        const res = await paxios.post('/manage/attachAudit',{userid:editrow.value.userid,status:editrow.value.file_status});
+        const res = await paxios.post('/manage/attachAudit', { userid: editrow.value.userid, status: editrow.value.file_status });
 
         if (res.data.code === 0) {
             dialogStatusVisible.value = false;
@@ -240,14 +242,14 @@ async function handleStatus() {
             ElMessage.error(res.data.msg);
         }
 
-    }catch(err){
+    } catch (err) {
         ElMessage.error('操作失败');
-    }finally{
+    } finally {
         dialogLoading.value = false;
     }
 }
 
-function download(){
+function download() {
     window.open(apiUrl + '/index/down_attachment?id=' + editrow.value.userid);
 }
 

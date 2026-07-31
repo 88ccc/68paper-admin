@@ -60,7 +60,7 @@ function onSubmit() {
     }).finally(() => { loading.value = false })
 }
 function clearConfig() {
-    ElMessageBox.confirm("确定要删除配置吗？删除后检查功能将无法使用", "提示", {
+    ElMessageBox.confirm("确定要删除配置吗？删除后检测功能将无法使用", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"

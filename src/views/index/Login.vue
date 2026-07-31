@@ -29,7 +29,7 @@
                     <template>
                         <el-tab-pane label="帐号密码" name="account"></el-tab-pane>
                     </template>
-                   
+
 
 
                 </el-tabs>
@@ -51,6 +51,17 @@
                             <el-checkbox v-model="loginForm.remember" class="remember-me">记住我</el-checkbox>
                             <el-link type="primary" @click="switchToView('forgot')" class="forgot-link">忘记密码?</el-link>
                         </div>
+                        <!-- 同意协议 -->
+                        <el-form-item prop="agreement" class="agreement-item">
+                            <el-checkbox v-model="loginForm.agreement" class="agreement-checkbox">
+                                我已阅读并同意
+                                <el-link type="primary" href="javascript:void(0)" @click="showArticle('UserAgreement')"
+                                    class="agreement-link">《用户协议》</el-link>
+                                和
+                                <el-link type="primary" href="javascript:void(0)" @click="showArticle('PrivacyPolicy')"
+                                    class="agreement-link">《隐私政策》</el-link>
+                            </el-checkbox>
+                        </el-form-item>
 
                         <el-form-item>
                             <el-button type="primary" class="submit-btn" @click="handleLogin" :loading="loginLoading">
@@ -68,8 +79,8 @@
 
             <!-- 注册界面 -->
             <div v-if="currentView === 'register'">
-               
-                <div >
+
+                <div>
                     <el-tabs v-model="registerMethod" class="auth-tabs" @tab-change="handleRegisterTabChange">
                         <template v-if="loginRegister.regList.indexOf('mobile') != -1">
                             <el-tab-pane label="手机号注册" name="phone"></el-tab-pane>
@@ -115,6 +126,18 @@
                         <el-form-item prop="confirmPassword">
                             <el-input v-model="registerForm.confirmPassword" type="password" placeholder="请确认密码"
                                 prefix-icon="Lock" clearable show-password></el-input>
+                        </el-form-item>
+
+                        <!-- 同意协议 -->
+                        <el-form-item prop="agreement" class="agreement-item">
+                            <el-checkbox v-model="registerForm.agreement" class="agreement-checkbox">
+                                我已阅读并同意
+                                <el-link type="primary" href="javascript:void(0)" @click="showArticle('UserAgreement')"
+                                    class="agreement-link">《用户协议》</el-link>
+                                和
+                                <el-link type="primary" href="javascript:void(0)" @click="showArticle('PrivacyPolicy')"
+                                    class="agreement-link">《隐私政策》</el-link>
+                            </el-checkbox>
                         </el-form-item>
 
                         <el-form-item>
@@ -205,7 +228,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, onMounted,onBeforeUnmount } from 'vue';
+import { ref, reactive, watch, onMounted, onBeforeUnmount } from 'vue';
 import type { FormInstance, FormItemRule, FormRules } from 'element-plus';
 import { useWebsitConfigStore } from '@/stores/websitConfig';
 import { storeToRefs } from "pinia"
@@ -219,7 +242,7 @@ const router = useRouter();
 
 
 const { loginRegister, hasEmail, hasSms } = storeToRefs(useWebsitConfigStore());
-const { isLogin, userId, userName, userEmail, userPhone, userAvatar, domain , openid } = storeToRefs(useUserInfoStore());
+const { isLogin, userId, userName, userEmail, userPhone, userAvatar, domain, payType, openid } = storeToRefs(useUserInfoStore());
 
 let userTid = 0;
 const articleVisible = ref<boolean>(false);
@@ -235,9 +258,9 @@ let loginQrStr = '';
 //客服框是否显示
 const ContactRef = ref();
 function showContactService() {
-  if (ContactRef.value) {
-    ContactRef.value.dialogVisible = true;
-  }
+    if (ContactRef.value) {
+        ContactRef.value.dialogVisible = true;
+    }
 }
 
 // 当前视图（登录/注册/找回密码）
@@ -260,6 +283,7 @@ onMounted(async () => {
         router.push('/home');
     }
     let tmp = route.params.tid as string
+    console.log("route.params.tid:", tmp)
     userTid = parseInt(tmp)
     if (Number.isNaN(userTid)) {
         userTid = 0
@@ -280,18 +304,20 @@ onMounted(async () => {
         }
 
     }
+    console.log("userTid:", userTid)
+    setCookie("tid", userTid.toString(), 30);
     window.addEventListener('resize', handleResize);
     if (!hasSms.value) {
         forgotMethod.value = "email"
     }
-   
-   
-        loginMethod.value = "account"
-    
+
+
+    loginMethod.value = "account"
+
     console.log(loginRegister.value.regList);
-    if(loginRegister.value.regList.indexOf('mobile') != -1){
+    if (loginRegister.value.regList.indexOf('mobile') != -1) {
         registerMethod.value = "phone";
-    }else if(loginRegister.value.regList.indexOf('email') != -1){
+    } else if (loginRegister.value.regList.indexOf('email') != -1) {
         registerMethod.value = "email";
     }
 
@@ -324,7 +350,8 @@ const argreeMeet = ref(false);
 const loginForm = reactive({
     account: '',
     password: '',
-    remember: false
+    remember: false,
+    agreement: false
 });
 
 // 登录方式（账号密码/微信扫码）
@@ -336,7 +363,8 @@ const registerForm = reactive({
     email: '',
     verifyCode: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    agreement: false
 });
 
 // 注册方式（手机号/邮箱）
@@ -381,12 +409,37 @@ const switchToView = (view: 'login' | 'register' | 'forgot') => {
 };
 
 
+function showArticle(title: string) {
+    articleContent.value = "";
+    if (title == 'PrivacyPolicy') {
+        articleLoading.value = true;
+        articleVisible.value = true;
+        paxios.get("/index/getPrivacyPolicy").then(res => {
+            if (res.data.code == 0) {
+                articleContent.value = res.data.data;
+            }
+        }).finally(() => { articleLoading.value = false })
+
+    } else if (title == 'UserAgreement') {
+        articleLoading.value = true;
+        articleVisible.value = true;
+        paxios.get("/index/getUserAgreement").then(res => {
+            if (res.data.code == 0) {
+                articleContent.value = res.data.data;
+            }
+        }).finally(() => { articleLoading.value = false })
+    } else {
+        console.log('showArticle', title);
+    }
+}
+
+
 // 登录标签页切换
 const handleLoginTabChange = () => {
     if (loginFormRef.value) {
         loginFormRef.value.clearValidate();
     }
-    
+
 };
 
 // 注册标签页切换
@@ -443,7 +496,8 @@ const loginRules = reactive<FormRules>({
                 }
             },
             trigger: 'blur'
-        }
+        },
+
     ],
     password: [
         {
@@ -456,6 +510,18 @@ const loginRules = reactive<FormRules>({
             max: 20,
             message: '密码长度在6-20个字符',
             trigger: 'blur'
+        }
+    ],
+    agreement: [
+        {
+            validator: (rule: any, value: any, callback: any) => {
+                if (!value) {
+                    callback(new Error('请阅读并同意用户协议和隐私政策'));
+                } else {
+                    callback();
+                }
+            },
+            trigger: 'change'
         }
     ]
 });
@@ -596,6 +662,18 @@ const forgotRules = reactive<FormRules>({
                 }
             },
             trigger: 'blur'
+        }
+    ],
+    agreement: [
+        {
+            validator: (rule: any, value: any, callback: any) => {
+                if (!value) {
+                    callback(new Error('请阅读并同意用户协议和隐私政策'));
+                } else {
+                    callback();
+                }
+            },
+            trigger: 'change'
         }
     ]
 });
@@ -757,7 +835,7 @@ const handleLogin = async () => {
         loginLoading.value = true;
 
         // 模拟登录请求
-        let res = await paxios.post('/index/login', { account: loginForm.account, password: loginForm.password,remember:loginForm.remember });
+        let res = await paxios.post('/index/login', { account: loginForm.account, password: loginForm.password, remember: loginForm.remember });
         if (res.data.code == 0) {
             ElMessage.success(res.data.msg);
             userId.value = res.data.data.id;
@@ -766,6 +844,7 @@ const handleLogin = async () => {
             userPhone.value = res.data.data.phone;
             userAvatar.value = res.data.data.avatar;
             domain.value = res.data.data.domain;
+            payType.value = res.data.data.pay_type
             isLogin.value = true;
             localStorage.setItem('userid', res.data.data.id);
             localStorage.setItem('token', res.data.data.token);
@@ -795,11 +874,7 @@ const handleRegister = async () => {
         } else if (registerMethod.value === 'email') {
             account = registerForm.email;
         }
-        let tid = getCookie('tid');
-        if (tid == null) {
-            tid = '0';
-        }
-        let res = await paxios.post('/index/register', { account: account, password: registerForm.password, code: registerForm.verifyCode, tid: tid, openid: openid.value });
+        let res = await paxios.post('/index/register', { account: account, password: registerForm.password, code: registerForm.verifyCode, tid: userTid, openid: openid.value });
         registerLoading.value = false;
         if (res.data.code == 0) {
             ElMessage.success(res.data.msg);
@@ -868,7 +943,7 @@ const handleResetPassword = async () => {
 
 // 组件卸载前确保清除定时器
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', handleResize);
+    window.removeEventListener('resize', handleResize);
 });
 
 </script>
@@ -882,8 +957,24 @@ onBeforeUnmount(() => {
     cursor: pointer;
 }
 
+.agreement-item {
+    margin-bottom: 25px;
+}
+
+.agreement-checkbox {
+    font-size: 13px;
+    color: #64748b;
+}
+
+.agreement-link {
+    margin: 0 3px;
+    cursor: pointer;
+}
+
 .auth-container {
-    min-height: calc(100vh - 64px);; /* 修改为100vh确保占满整个视口高度 */
+    min-height: calc(100vh - 64px);
+    ;
+    /* 修改为100vh确保占满整个视口高度 */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -891,7 +982,8 @@ onBeforeUnmount(() => {
     background-color: #f5f7fa;
     position: relative;
     padding: 20px;
-    margin: 0; /* 重置可能存在的外边距 */
+    margin: 0;
+    /* 重置可能存在的外边距 */
 }
 
 .auth-card {
@@ -903,7 +995,8 @@ onBeforeUnmount(() => {
     padding: 36px;
     z-index: 1;
     /* 添加以下属性确保卡片本身也垂直居中 */
-    margin: auto; /* 自动外边距确保居中 */
+    margin: auto;
+    /* 自动外边距确保居中 */
 }
 
 .auth-header {

@@ -10,6 +10,7 @@ export const useUserInfoStore = defineStore('userInfo', () => {
     const userAvatar = ref('')
     const openid = ref('')
     const domain = ref('')
+    const payType=ref('')
 
     function resetUserInfo(){
         isLogin.value = false
@@ -19,6 +20,7 @@ export const useUserInfoStore = defineStore('userInfo', () => {
         userPhone.value = ''
         userAvatar.value = ''
         domain.value = ''
+        payType.value=""
     }
-    return { isLogin, userId, userName,userEmail,userPhone,userAvatar,openid,domain,resetUserInfo }
+    return { isLogin, userId, userName,userEmail,userPhone,userAvatar,openid,domain,payType,resetUserInfo }
 })

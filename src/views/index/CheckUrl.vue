@@ -24,7 +24,7 @@
             3、你有且只有一次机会设置<br />
         </el-alert>
         <el-input style="margin: 15px 5px;" v-model="newDomain" placeholder="请输入个性域名">
-            <template #append>.{{ frontend }}</template>
+            <template #append>.xxxx.com</template>
         </el-input>
         <el-button type="primary" @click="setDomain">提交</el-button>
     </el-card>
@@ -49,10 +49,11 @@
 import { ref, onMounted, reactive, onUnmounted } from 'vue'
 import { paxios } from '@/utils/paxios'
 import { storeToRefs } from "pinia"
-import { useWebsitConfigStore } from '@/stores/websitConfig'
+import { useSaleWebStore } from '@/stores/saleWebConfig'
 import { useUserInfoStore } from "@/stores/userinfo"
 const userinfo = storeToRefs(useUserInfoStore());
-const { frontend } = storeToRefs(useWebsitConfigStore());
+const { saleWebConfig } = storeToRefs(useSaleWebStore());
+
 
 interface CheckItem {
     name:string;
@@ -77,18 +78,13 @@ onMounted(() => {
 
         needDomain.value = true
     } else {
-        tableData.value.push({
-          name:"维普检测",
-          url:"https://"+userinfo.domain.value+".wp."+frontend.value
-          });
-          tableData.value.push({
-          name:"维普智评",
-          url:"https://"+userinfo.domain.value+".wpzp."+frontend.value
-          });
-          tableData.value.push({
-          name:"万方检测",
-          url:"https://"+userinfo.domain.value+".wf."+frontend.value
-          });
+        for (let i = 0; i < saleWebConfig.value.length; i++) {
+            const item = saleWebConfig.value[i];
+            tableData.value.push({
+                name: item.name,
+                url: "https://"+userinfo.domain.value+"."+item.baseurl
+            });
+        }
         showUrl.value = true
     }
 })

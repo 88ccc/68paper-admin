@@ -1,25 +1,62 @@
 <template>
     <el-config-provider :locale="zhCn">
+        <el-dialog v-model="dialogVisible" title="新增检测卡" :width="dialogWidth" :close-on-click-modal="false" show-close>
+            <el-form v-loading="dialogLoading" :model="rwData" label-width="auto" style="margin-top: 10px;">
+                <el-form-item label="检测系统">
+                    <el-select v-model="rwData.product_id" placeholder="选择状态">
+                        <el-option v-for="item in checkProducts" :key="item.id" :label="item.name" :value="item.id" />
+
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="可用件数">
+                    <el-input-number v-model="rwData.piece" :min="1" :max="1000" :precision="0" />
+                </el-form-item>
+
+                <el-form-item label="备注" prop="remark">
+                    <el-input v-model="rwData.remark" :rows="4" type="textarea" />
+                </el-form-item>
+
+                <el-form-item>
+                    <el-button type="primary" @click="createCard">提交</el-button>
+                    <el-button @click="dialogVisible = false">取消</el-button>
+                </el-form-item>
+
+
+            </el-form>
+        </el-dialog>
         <el-card>
             <template #header>
                 <div class="card-header">
-                    <span>检测记录</span>
+                    <span>检测卡</span>
                 </div>
             </template>
             <div class="table-container">
+                <div style="margin-bottom: 15px;">
+                    <el-button type="primary" @click="addCard">新增检测卡</el-button>
+                </div>
+                <div style="margin-bottom:15px;">
+                    <el-alert title="提示" type="primary" :closable="false" >
+                        1、每个卡号，只能使用一次。不再使用的卡号，应该及时禁用。<br/>
+                        2、检测卡泄漏引起的损失自行负责。<br/>
+                        3、什么是“件数”，要看我们的供货价格。如果供货价格是按千字计费，那么一件就是一千字。如果供货价格是按万字计费，那么一件就是一万字。如果供货价格是按篇计费，那么一件就是一篇。<br/>
+                    </el-alert>
+                </div>
                 <div class="search-bar">
                     <el-row :gutter="16">
                         <!-- 响应式配置：大屏幕6列，平板8列，手机12列（占满整行） -->
                         <el-col :xs="12" :sm="8" :lg="6">
-                            <el-input v-model="searchForm.orderid" placeholder="请输入订单ID" clearable
+                            <el-input v-model="searchForm.cardid" placeholder="请输入卡号" clearable class="search-input" />
+                        </el-col>
+                        <el-col :xs="12" :sm="8" :lg="6">
+                            <el-input v-model="searchForm.orderid" placeholder="请输入订单号" clearable
                                 class="search-input" />
                         </el-col>
                         <el-col :xs="12" :sm="8" :lg="6">
-                            <el-input v-model="searchForm.payid" placeholder="请输入支付ID" clearable class="search-input" />
-                        </el-col>
-                        <el-col :xs="12" :sm="8" :lg="6">
-                            <el-input v-model="searchForm.shopid" placeholder="请输入用户ID" clearable
-                                class="search-input" />
+                            <el-select v-model="searchForm.status" placeholder="选择状态">
+                                <el-option label="可使用" value="1" />
+                                <el-option label="已使用" value="2" />
+                                <el-option label="已禁用" value="3" />
+                            </el-select>
                         </el-col>
 
                         <el-col :xs="6" :sm="8" :lg="2">
@@ -34,57 +71,34 @@
                 </div>
                 <el-table :data="tableData" border stripe style="width: 100%" v-loading="loading"
                     :cell-style="{ 'padding': '8px 5px' }" :header-cell-style="{ 'padding': '10px 5px' }">
-                    <el-table-column prop="id" label="订单号" min-width="140" align="center" :show-overflow-tooltip="true">
+                    <el-table-column prop="id" label="卡号" min-width="120" align="center"
+                        :show-overflow-tooltip="true" />
+                    <el-table-column label="检测系统" min-width="120" align="center">
                         <template #default="scope">
-                            {{ scope.row.id }}<br />
                             {{ getSystemName(scope.row.product_id) }}
                         </template>
                     </el-table-column>
-                    <el-table-column prop="userid" label="用户ID" min-width="120" align="center">
-                        <template #default="scope">
-                            <span>销售:{{ scope.row.userid }}</span>
-                            <span v-if="scope.row.tid != 0"><br />邀请:{{ scope.row.tid }}</span>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="payid" label="支付ID" min-width="120" align="center" />
-                    <el-table-column label="利润" min-width="140" align="center" :show-overflow-tooltip="true">
-                        <template #default="scope">
-                            成本:{{ scope.row.cost / 100 }} 元<br />
-                            利润:{{ scope.row.profit / 100 }}元
-                        </template>
-                    </el-table-column>
-                    <el-table-column label="售价" min-width="140" align="center" :show-overflow-tooltip="true">
-                        <template #default="scope">
-                            单价:{{ scope.row.unit_price / 100 }} 元<br />
-                            总价:{{ scope.row.total_price / 100 }}元
-                        </template>
-                    </el-table-column>
-                    <el-table-column label="字数" min-width="120" align="center">
-                        <template #default="scope">
-                            字数: {{ scope.row.words }}<br />
-                            件数: {{ scope.row.piece }}
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="create_time" label="提交时间" min-width="120" align="center" />
 
-                    <el-table-column label="信息" min-width="140" align="center" :show-overflow-tooltip="true">
-                        <template #default="scope">
-                            <span v-show="scope.row.title">标题: {{ scope.row.title }}<br /></span>
-                            <span v-show="scope.row.author">作者:{{ scope.row.author }}</span>
-                            <span v-show="scope.row.end_date">发表日期:{{ scope.row.end_date }}</span>
-                        </template>
-                    </el-table-column>
+                    <el-table-column prop="create_time" label="生成时间" min-width="120" align="center" />
+                    <el-table-column prop="piece" label="可用件数" min-width="80" align="center" />
+                    <el-table-column prop="used" label="已用件数" min-width="80" align="center" />
                     <el-table-column label="状态" min-width="100" align="center">
                         <template #default="scope">
-                            {{ statustoStr(scope.row.status) }}
+                            <el-tag :type="scope.row.status === 1 ? 'success' :
+                                scope.row.status === 2 ? 'primary' : 'warning'" size="small">
+                                {{ statustoStr(scope.row.status) }}
+                            </el-tag>
+
                         </template>
                     </el-table-column>
+                    <el-table-column prop="order_id" label="订单号" min-width="120" align="center"
+                        :show-overflow-tooltip="true" />
                     <el-table-column prop="remark" label="备注" min-width="80" align="center" />
-                    <el-table-column label="操作" min-width="120" align="center">
+                    <el-table-column label="操作" min-width="100" align="center">
                         <template #default="scope">
-                            <el-button v-show="scope.row.status >= 4 && scope.row.status != 9" type="primary" text
-                                size="small" @click="orderRefund(scope.row)">
-                                退款
+                            <el-button v-show="scope.row.status == 1" type="primary" text size="small"
+                                @click="disableCard(scope.row)">
+                                禁用
                             </el-button>
 
                         </template>
@@ -113,40 +127,54 @@ interface Pagination {
 }
 // 定义搜索表单类型
 interface SearchForm {
+    cardid: string;
     orderid: string;
-    payid: string;
-    shopid: string;
+    status: string;
 }
 // 搜索表单数据
 const searchForm = reactive<SearchForm>({
+    cardid: '',
     orderid: '',
-    payid: "",
-    shopid: "",
+    status: "",
 });
 
 const checkProducts = ref<any[]>([])
+const dialogVisible = ref(false)
+const dialogWidth = ref('600px')
+const dialogLoading = ref(false);
+
+interface CardItem {
+
+    product_id: string;
+    piece: number;
+    mun: number;
+    remark: string;
+}
+
+const rwData = ref<CardItem>({
+    product_id: '',
+    piece: 0,
+    mun: 1,
+    remark: '',
+});
+
+
+const handleResize = () => {
+    if (window.innerWidth < 768) {
+        dialogWidth.value = "92%";
+    } else {
+        dialogWidth.value = "600px";
+
+    }
+};
 
 function statustoStr(status: number) {
     if (status == 1) {
-        return "解析中";
+        return "未使用";
     } else if (status == 2) {
-        return "待付款";
+        return "已使用";
     } else if (status == 3) {
-        return "解析失败";
-    } else if (status == 4) {
-        return "用户支付成功";
-    } else if (status == 5) {
-        return "供货成功";
-    } else if (status == 6) {
-        return "供货成功";
-    } else if (status == 7) {
-        return "供货失败";
-    } else if (status == 8) {
-        return "检测成功";
-    } else if (status == 9) {
-        return "已经退款"
-    } else if (status == 10) {
-        return "报告删除"
+        return "已禁用";
     }
     return "";
 }
@@ -188,18 +216,18 @@ const pagination = reactive<Pagination>({
 const fetchProductList = async () => {
     try {
         loading.value = true;
-        let url = '/manage/getCheckOrderData?page=' + pagination.currentPage + '&limit=' + pagination.pageSize;
+        let url = '/console/getCardData?page=' + pagination.currentPage + '&limit=' + pagination.pageSize;
+        let cardid = searchForm.cardid.trim();
+        if (cardid.length > 0) {
+            url = url + "&cardid=" + cardid;
+        }
         let orderid = searchForm.orderid.trim();
-        if (orderid.length > 1) {
+        if (orderid.length > 0) {
             url = url + "&orderid=" + orderid;
         }
-        let payid = searchForm.payid.trim();
-        if (payid.length > 1) {
-            url = url + "&payid=" + payid;
-        }
-        let shopid = searchForm.shopid.trim();
-        if (shopid.length > 1) {
-            url = url + "&shopid=" + shopid;
+        let status = searchForm.status.trim();
+        if (status.length > 0) {
+            url = url + "&status=" + status;
         }
 
 
@@ -211,8 +239,8 @@ const fetchProductList = async () => {
             ElMessage.error(res.data.msg);
         }
     } catch (error) {
-        ElMessage.error('获取检测记录列表失败');
-        console.error('获取检测记录列表错误:', error);
+        ElMessage.error('获取检测卡列表失败');
+        console.error('获取检测卡列表失败:', error);
     } finally {
         loading.value = false;
     }
@@ -224,7 +252,9 @@ function handleSearch() {
 
 
 onMounted(async () => {
-    try {
+    handleResize();
+    window.addEventListener('resize', handleResize);
+     try {
         let url = '/index/getCheckIdAndName';
         const res1 = await paxios.get(url);
         if (res1.data.code === 0) {
@@ -235,38 +265,72 @@ onMounted(async () => {
     } catch (err) {
         ElMessage.error("获取产品信息失败");
     }
+    
     fetchProductList();
 });
-
-
-async function orderRefund(row: any) {
-    let msg = "订单" + row.id + ",支付id:" + row.payid + ",将退款 " + row.total_price / 100 + "元";
-    ElMessageBox.confirm(
-        msg,
-        '退款警告',
-        {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning',
+onUnmounted(() => {
+    window.removeEventListener('resize', handleResize);
+});
+async function disableCard(row: any) {
+    try {
+        const ret = await paxios.post('/console/disableCard', {
+            cardid: row.id
+        })
+        if (ret.data.code == 0) {
+            ElMessage.success('禁用成功')
+            fetchProductList();
+        } else {
+            ElMessage.error(ret.data.msg)
         }
-    )
-        .then(async () => {
-            try {
-                let res = await paxios.post("/manage/orderRefund", { orderid: row.id });
-                if (res.data.code == 0) {
-                    ElMessage.success("退款成功");
-                    fetchProductList();
-                } else {
-                    ElMessage.error(res.data.msg);
-                }
-            } catch (err) {
-                ElMessage.error("退款失败");
-            }
-        })
-        .catch(() => {
+    } catch (error) {
+        ElMessage.error('禁用失败');
+        console.error('禁用失败:', error);
+    }
 
-        })
+}
 
+async function createCard() {
+    //检查数据
+    if (rwData.value.product_id == '') {
+        ElMessage.error('请选择产品');
+        return;
+    }
+    if (rwData.value.piece <= 0) {
+        ElMessage.error('请输入可用件数');
+        return;
+    }
+    if (rwData.value.mun <= 0) {
+        ElMessage.error('请输入卡数量');
+        return;
+    }
+    try {
+        const ret = await paxios.post('/console/createCheckCard', {
+            piece: rwData.value.piece,
+            product_id: rwData.value.product_id,
+            mun: rwData.value.mun,
+            remark: rwData.value.remark
+        })
+        if (ret.data.code == 0) {
+            ElMessage.success('创建成功')
+            dialogVisible.value = false;
+            fetchProductList();
+        } else {
+            ElMessage.error(ret.data.msg)
+        }
+    } catch (error) {
+        ElMessage.error('禁用失败');
+        console.error('禁用失败:', error);
+    }
+
+}
+
+function addCard() {
+
+    rwData.value.product_id = '';
+    rwData.value.piece = 0;
+    rwData.value.mun = 1;
+    rwData.value.remark = '';
+    dialogVisible.value = true;
 }
 
 

@@ -83,6 +83,23 @@
                 <el-form-item label="商户秘钥" prop="mchSecretKey">
                     <el-input v-model="wxpay.mchSecretKey" placeholder="APIv3密钥32字节"></el-input>
                 </el-form-item>
+                <el-form-item label="公钥ID" prop="pubKeyId">
+                    <el-input v-model="wxpay.pubKeyId" placeholder="微信支付公钥ID"></el-input>
+                </el-form-item>
+                <el-form-item label="支付公钥" prop="mchSecretCert">
+                    <el-upload :limit="1" accept=".pem" :on-change="pubKeyFileChange" :auto-upload="false">
+                        <template #trigger>
+                            <el-button type="primary">点击上传<el-icon class="el-icon--right">
+                                    <Upload />
+                                </el-icon></el-button>
+                        </template>
+                        <template #tip>
+                            <div class="el-upload__tip text-red">
+                                请上传微信支付公钥证书pub_key.pem
+                            </div>
+                        </template>
+                    </el-upload>
+                </el-form-item>
                 <el-form-item label="商户私钥" prop="mchSecretCert">
                     <el-upload :limit="1" accept=".pem" :on-change="mchSecretCertChange" :auto-upload="false">
                         <template #trigger>
@@ -92,7 +109,7 @@
                         </template>
                         <template #tip>
                             <div class="el-upload__tip text-red">
-                                请上传apiclient_key.pem
+                                请上传商户API证书apiclient_key.pem
                             </div>
                         </template>
                     </el-upload>
@@ -106,7 +123,7 @@
                         </template>
                         <template #tip>
                             <div class="el-upload__tip text-red">
-                                请上传apiclient_cert.pem
+                                请上传商户API证书apiclient_cert.pem
                             </div>
                         </template>
                     </el-upload>
@@ -190,6 +207,8 @@ const wxpay = ref({
     appId: '',
     mchId: '',
     mchSecretKey: '',
+    pubKeyId: '',
+    pubkeyFile: null as File | null,
     mchSecretCert: null as File | null,
     mchPublicCert: null as File | null
 })
@@ -207,6 +226,12 @@ const wxpayRules = reactive<FormRules>({
     ],
     mchSecretKey: [
         { required: true, message: '请输入商户秘钥', trigger: 'blur' },
+    ],
+    pubKeyId: [
+        { required: true, message: '请输入微信支付公钥ID', trigger: 'blur' },
+    ],
+    pubkeyFile: [
+        { required: true, message: '请上传微信支付公钥证书', trigger: 'blur' },
     ],
     mchSecretCert: [
         { required: true, message: '请上传商户私钥', trigger: 'blur' },
@@ -322,8 +347,20 @@ function mchPublicCertChange(uploadFile: UploadFile, uploadFiles: UploadFiles) {
         if (name.endsWith('.pem')) {
             wxpay.value.mchPublicCert = uploadFile.raw;
         } else {
-            ElMessage.error('请上传crt文件');
+            ElMessage.error('请上传pem文件');
             wxpay.value.mchPublicCert = null;
+        }
+    }
+}
+
+function pubKeyFileChange(uploadFile: UploadFile, uploadFiles: UploadFiles) {
+    if (uploadFile.raw) {
+        let name = uploadFile.raw.name;
+        if (name.endsWith('.pem')) {
+            wxpay.value.pubkeyFile = uploadFile.raw;
+        } else {
+            ElMessage.error('请上传pem文件');
+            wxpay.value.pubkeyFile = null;
         }
     }
 }
@@ -334,7 +371,7 @@ function mchSecretCertChange(uploadFile: UploadFile, uploadFiles: UploadFiles) {
         if (name.endsWith('.pem')) {
             wxpay.value.mchSecretCert = uploadFile.raw;
         } else {
-            ElMessage.error('请上传crt文件');
+            ElMessage.error('请上传pem文件');
             wxpay.value.mchSecretCert = null;
         }
     }
@@ -390,6 +427,13 @@ async function wxPaySave() {
         formData.append('appId', wxpay.value.appId);
         formData.append('mchId', wxpay.value.mchId);
         formData.append('mchSecretKey', wxpay.value.mchSecretKey);
+        formData.append('pubKeyId', wxpay.value.pubKeyId);
+        if (wxpay.value.pubkeyFile) {
+            formData.append('pubkeyFile', wxpay.value.pubkeyFile);
+        } else {
+            ElMessage.error('请上传微信支付公钥证书');
+            return
+        }
         if (wxpay.value.mchSecretCert) {
             formData.append('mchSecretCert', wxpay.value.mchSecretCert);
         } else {
@@ -514,6 +558,8 @@ function shwoWxpay() {
         appId: '',
         mchId: '',
         mchSecretKey: '',
+        pubKeyId: '',
+        pubkeyFile: null as File | null,
         mchSecretCert: null as File | null,
         mchPublicCert: null as File | null
     }

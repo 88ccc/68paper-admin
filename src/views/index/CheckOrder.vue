@@ -36,12 +36,12 @@
                             {{ getSystemName(scope.row.product_id) }}
                         </template>
                     </el-table-column>
-                    <el-table-column label="支付ID" min-width="120" align="center" >
+                    <el-table-column label="支付ID" min-width="120" align="center">
                         <template #default="scope">
                             <span v-if="scope.row.userid == userId">{{ scope.row.spayid }}</span>
                         </template>
                     </el-table-column>
-                    <el-table-column label="利润" min-width="140" align="center" :show-overflow-tooltip="true">
+                    <el-table-column label="利润" min-width="120" align="center" :show-overflow-tooltip="true">
                         <template #default="scope">
                             <span v-if="scope.row.userid == userId">
                                 成本:{{ scope.row.cost / 100 }} 元<br />
@@ -53,7 +53,7 @@
 
                         </template>
                     </el-table-column>
-                    <el-table-column label="售价" min-width="140" align="center" :show-overflow-tooltip="true">
+                    <el-table-column label="售价" min-width="120" align="center" :show-overflow-tooltip="true">
                         <template #default="scope">
                             <span v-if="scope.row.userid == userId">
                                 单价:{{ scope.row.unit_price / 100 }} 元<br />
@@ -66,6 +66,10 @@
                             <span v-if="scope.row.userid == userId">
                                 字数: {{ scope.row.words }}<br />
                                 件数: {{ scope.row.piece }}
+                            </span>
+                            <span v-if="scope.row.tid == userId">
+                                字数: {{ scope.row.words }}<br />
+                                件数: {{ scope.row.ppiece }}
                             </span>
                         </template>
                     </el-table-column>
@@ -83,7 +87,7 @@
                             {{ statustoStr(scope.row.status) }}
                         </template>
                     </el-table-column>
-                    <el-table-column prop="remark" label="备注" min-width="80" align="center">
+                    <el-table-column prop="remark" label="备注" min-width="100" align="center">
                         <template #default="scope">
                             <span v-if="scope.row.userid == userId">{{ scope.row.remark }}</span>
                             <span v-if="scope.row.tid == userId">邀请奖励(销售:{{ scope.row.userid }})</span>

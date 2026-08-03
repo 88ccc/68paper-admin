@@ -41,6 +41,13 @@
                     <span>检测产品</span>
                 </div>
             </template>
+            <div>
+                <el-alert title="提示" type="primary" :closable="false">
+                    1、你的利润是 售价 减去 供货价。<br />
+                    2、你可以通过编辑，修改售价。<br />
+                    <span v-if="reward_enabled">3、“邀请奖励”是什么意思？你可以去 代理管理->招募代理 页面，那里有详细说明。</span>
+                </el-alert>
+            </div>
             <div class="table-container">
                 <el-table :data="tableData" border stripe style="width: 100%" :cell-style="{ 'padding': '8px 5px' }"
                     :header-cell-style="{ 'padding': '10px 5px' }">
@@ -51,7 +58,8 @@
                             {{ scope.row.cost / 100 }}元/{{ convertNumberToUnit(scope.row.punit) }}
                         </template>
                     </el-table-column>
-                    <el-table-column v-if="reward_enabled" label="邀请奖励" min-width="120" align="center" :show-overflow-tooltip="true">
+                    <el-table-column v-if="reward_enabled" label="邀请奖励" min-width="120" align="center"
+                        :show-overflow-tooltip="true">
                         <template #default="scope">
                             {{ scope.row.reward / 100 }}元/{{ convertNumberToUnit(scope.row.punit) }}
                         </template>
@@ -65,6 +73,11 @@
                     <el-table-column label="零售价" min-width="120" align="center" :show-overflow-tooltip="true">
                         <template #default="scope">
                             {{ scope.row.price / 100 }}元/{{ convertNumberToUnit(scope.row.unit) }}
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="利润" min-width="120" align="center" :show-overflow-tooltip="true">
+                        <template #default="scope">
+                            <span v-html="getProfit(scope.row)"></span>
                         </template>
                     </el-table-column>
                     <el-table-column label="状态" min-width="80" align="center">
@@ -105,7 +118,7 @@ import { useSaleWebStore } from '@/stores/saleWebConfig'
 import { storeToRefs } from "pinia"
 
 const loading = ref(false);
-  const { reward_enabled } = storeToRefs(useSaleWebStore());
+const { reward_enabled } = storeToRefs(useSaleWebStore());
 
 // 定义分页类型
 interface Pagination {
@@ -197,7 +210,23 @@ function editProduct(row: any) {
     dialogVisible.value = true;
 }
 
+function getProfit(row: any) {
+    let bili = 1;
+    if (row.unit > row.punit) {
+        bili = Math.floor(row.unit / row.punit);
+    }
 
+    let cost = bili * row.cost;
+    let profit = row.price - cost;
+    let str = "" + profit / 100 + "元/" + convertNumberToUnit(row.unit);
+    let rstr = "";
+    if (profit <= 0) {
+        rstr = "<span style='color:red'>" + str + "</span>";
+    } else {
+        rstr = str;
+    }
+    return rstr;
+}
 
 
 function getDecimalDigits(num: number): number {
@@ -219,8 +248,8 @@ async function handleSubmit() {
         return;
     }
     let price = Math.round(rwData.value.price * 100);
-    
-    
+
+
     const res = await paxios.post("/console/updateCheckProduct", {
         id: rwData.value.id,
         price: price,
@@ -285,6 +314,10 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.text-red {
+    color: red;
+}
+
 .table-container {
     margin-top: 10px;
     margin-bottom: 16px;

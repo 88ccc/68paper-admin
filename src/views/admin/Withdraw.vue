@@ -23,12 +23,12 @@
                         <el-input v-model="handleAccount" type="txt" disabled />
                     </el-form-item>
                     <el-form-item label="手续费:">
-                        <el-input v-model="handleCharge" type="number" >
+                        <el-input v-model="handleCharge" type="number">
                             <template #append>元</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="实际到账:">
-                        <el-input v-model="handleAmount" type="number" disabled >
+                        <el-input v-model="handleAmount" type="number" disabled>
                             <template #append>元</template>
                         </el-input>
                     </el-form-item>
@@ -302,6 +302,13 @@ const handleCurrentChange = (page: number) => {
     fetchDataList();
 };
 
+function truncToFixed(num: number, n = 2) {
+    const pow = 10 ** n;
+    // 处理正数截断
+    const temp = Math.trunc(num * pow) / pow;
+    return temp.toFixed(n);
+}
+
 async function handleWithdraw(data: any) {
     handleid.value = data.id;
     handleUserid.value = data.userid;
@@ -311,8 +318,8 @@ async function handleWithdraw(data: any) {
     handleAccount.value = data.account;
     //计算手续费
     if (withdrawConfig.value.charge) {
-        let num = data.money * withdrawConfig.value.charge / 100;
-        handleCharge.value = parseFloat(num.toFixed(2));
+        let num = handleMoney.value * withdrawConfig.value.charge / 100;
+        handleCharge.value = parseFloat(truncToFixed(num));
     } else {
         handleCharge.value = 0.0;
     }
@@ -335,7 +342,7 @@ async function handleWithdraw(data: any) {
 }
 
 async function withdrawSubmit() {
-    const parts =  handleCharge.value.toString().split(".");
+    const parts = handleCharge.value.toString().split(".");
     if (parts[1] && parts[1].length > 2) {
         ElMessage.error("手续费最多两位小数");
         return;

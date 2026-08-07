@@ -28,7 +28,7 @@
         <el-card v-loading="loading">
             <template #header>
                 <div class="card-header">
-                    <span>检测配置</span>
+                    <span>公告配置</span>
                 </div>
             </template>
             <el-button @click="addItem" type="primary">新增项目</el-button>

@@ -49,8 +49,8 @@
                     <el-table-column prop="payid" label="支付ID" min-width="120" align="center" />
                     <el-table-column label="利润" min-width="140" align="center" :show-overflow-tooltip="true">
                         <template #default="scope">
-                            成本:{{ scope.row.cost / 100 }} 元<br />
-                            利润:{{ scope.row.profit / 100 }}元
+                            成本:{{ scope.row.pcost / 100 }} 元<br />
+                            利润:{{ scope.row.pprofit / 100 }}元
                         </template>
                     </el-table-column>
                     <el-table-column label="售价" min-width="140" align="center" :show-overflow-tooltip="true">

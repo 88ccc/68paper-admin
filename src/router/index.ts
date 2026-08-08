@@ -213,6 +213,15 @@ const router = createRouter({
           component: () => import("@/views/admin/DeleteUser.vue")
         }
       ]
+    }, {
+      path: '/pay',
+      component: () => import('@/views/pay/Index.vue'),
+      children: [
+        {
+          path: "check",
+          component: () => import("@/views/pay/Check.vue")
+        }
+      ]
     },
     {
       path: '/:pathMatch(.*)*',

@@ -2,15 +2,23 @@
     <el-config-provider :locale="zhCn">
         <el-dialog v-model="dialogStatusVisible" title="状态修改" :width="dialogWidth" :close-on-click-modal="false"
             show-close>
-            <div v-loading="dialogLoading">
-                用户ID: {{ editStatusId }}<br />
-                当前状态: <el-tag :type="editStatusStatus === 1 ? 'success' :
-                    editStatusStatus === 2 ? 'danger' : 'warning'" size="small">
-                    {{ editStatusStatus === 1 ? '正常' :
-                        editStatusStatus === 2 ? '禁用' : '未激活' }}
-                </el-tag>
-                <br />
-                <br />
+            <div v-loading="dialogLoading" class="status-info">
+                <div class="info-row">
+                    <span class="info-label">用户ID</span>
+                    <span class="info-value">{{ editStatusId }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">当前状态</span>
+                    <el-tag :type="editStatusStatus === 1 ? 'success' :
+                        editStatusStatus === 2 ? 'danger' : 'warning'" size="small">
+                        {{ editStatusStatus === 1 ? '正常' :
+                            editStatusStatus === 2 ? '禁用' : '未激活' }}
+                    </el-tag>
+                </div>
+                <div v-if="editWebid" class="info-row">
+                    <span class="info-label">个性域名</span>
+                    <span class="info-value">{{ editWebid }}</span>
+                </div>
                 <el-form label-width="auto">
                     <el-form-item label="状态:">
                         <el-select v-model="newStatus" placeholder="请选择状态" style="width: 240px" class="search-select">
@@ -29,7 +37,7 @@
                 </el-form>
             </div>
         </el-dialog>
-        
+
         <el-dialog v-model="dialogNameVisible" title="修改代理姓名" :width="dialogWidth" :close-on-click-modal="false"
             show-close>
             <div>
@@ -38,7 +46,7 @@
                     <el-form-item label="姓名:">
                         <el-input type="text" v-model="newName" clearable />
                     </el-form-item>
-                    
+
                     <el-form-item>
                         <el-button type="primary" @click="handleName">提交</el-button>
                     </el-form-item>
@@ -96,7 +104,7 @@
                             <el-tag v-if="scope.row.status === 1" type="success">正常</el-tag>
                             <el-tag v-if="scope.row.status === 2" type="warning">禁用</el-tag>
                             <el-tag v-if="scope.row.status === 3" type="danger">注销</el-tag>
-                           
+
                         </template>
                     </el-table-column>
                     <el-table-column prop="name" label="姓名" min-width="80" align="center" />
@@ -137,6 +145,7 @@ const dialogLoading = ref(false);
 const dialogStatusVisible = ref(false);
 const dialogWidth = ref('600px')
 const editStatusId = ref(0);
+const editWebid = ref("");
 const editStatusStatus = ref(0);
 const newStatus = ref(0);
 const statusRemark = ref("");
@@ -290,13 +299,18 @@ const handleCurrentChange = (page: number) => {
 };
 
 // 查看用户详情
-const statusEdit = (row: any) => {
-    dialogLoading.value = false;
-    dialogStatusVisible.value = true;
+const statusEdit = async (row: any) => {
     editStatusId.value = row.id;
     editStatusStatus.value = row.status;
     newStatus.value = row.status;
     statusRemark.value = "";
+    editWebid.value = "";
+    dialogLoading.value = false;
+    dialogStatusVisible.value = true;
+    let res = await paxios.get("/manage/getUserWebid?userid=" + row.id);
+    if (res.data.code === 0) {
+        editWebid.value = res.data.data.webid;
+    }
 };
 
 async function handleStatus() {
@@ -390,6 +404,35 @@ async function handleName() {
 .pagination-container {
     text-align: right;
     padding-top: 8px;
+}
+
+/* 状态弹窗信息区域 */
+.status-info {
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    background: #f5f7fa;
+    border-radius: 8px;
+}
+
+.info-row {
+    display: flex;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid #e4e7ed;
+    margin-bottom: 5px;
+}
+
+.info-label {
+    flex-shrink: 0;
+    width: 80px;
+    color: #909399;
+    font-size: 14px;
+}
+
+.info-value {
+    color: #303133;
+    font-size: 14px;
+    font-weight: 500;
 }
 
 /* 针对不同屏幕尺寸的额外调整 */

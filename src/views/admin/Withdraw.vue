@@ -37,7 +37,7 @@
                             class="search-select">
                             <el-option label="待处理" :value="1" />
                             <el-option label="提现成功" :value="2" />
-                            <el-option label="提现失败" :value="2" />
+                            <el-option label="提现失败" :value="3" />
                         </el-select>
                     </el-form-item>
                     <el-form-item label="备注:">
@@ -85,14 +85,16 @@
                 <div class="table-container">
                     <el-table :data="tableData" border stripe style="width: 100%" v-loading="loading"
                         :cell-style="{ 'padding': '8px 5px' }" :header-cell-style="{ 'padding': '10px 5px' }">
-                        <el-table-column prop="create_time" label="发生时间" min-width="150" align="center"
+                        <el-table-column prop="userid" label="用户ID" min-width="60" align="center"
                             :show-overflow-tooltip="true" />
-                        <el-table-column label="提现金额" min-width="100" align="center" :show-overflow-tooltip="true">
+                        <el-table-column prop="create_time" label="发生时间" min-width="140" align="center"
+                            :show-overflow-tooltip="true" />
+                        <el-table-column label="提现金额" min-width="80" align="center" :show-overflow-tooltip="true">
                             <template #default="scope">
                                 <span>{{ scope.row.money / 100 }}元</span>
                             </template>
                         </el-table-column>
-                        <el-table-column label="账户类型" min-width="100" align="center" :show-overflow-tooltip="true">
+                        <el-table-column label="账户类型" min-width="80" align="center" :show-overflow-tooltip="true">
                             <template #default="scope">
                                 <span>{{ accountTypeZh(scope.row.account_type) }}</span>
                             </template>
@@ -102,29 +104,29 @@
                                 <span>{{ scope.row.account }}</span>
                             </template>
                         </el-table-column>
-                        <el-table-column label="转账时间" min-width="150" align="center" :show-overflow-tooltip="true">
+                        <el-table-column label="转账时间" min-width="140" align="center" :show-overflow-tooltip="true">
                             <template #default="scope">
                                 <span v-if="scope.row.status != 1">{{ scope.row.do_time }}</span>
                             </template>
                         </el-table-column>
-                        <el-table-column label="实际到账" min-width="100" align="center" :show-overflow-tooltip="true">
+                        <el-table-column label="实际到账" min-width="80" align="center" :show-overflow-tooltip="true">
                             <template #default="scope">
                                 <span v-if="scope.row.status != 1">{{ scope.row.amount / 100 }}元</span>
                             </template>
                         </el-table-column>
-                        <el-table-column label="手续费" min-width="100" align="center" :show-overflow-tooltip="true">
+                        <el-table-column label="手续费" min-width="80" align="center" :show-overflow-tooltip="true">
                             <template #default="scope">
                                 <span v-if="scope.row.status != 1">{{ scope.row.charge / 100 }}元</span>
                             </template>
                         </el-table-column>
-                        <el-table-column label="状态" min-width="100" align="center" :show-overflow-tooltip="true">
+                        <el-table-column label="状态" min-width="80" align="center" :show-overflow-tooltip="true">
                             <template #default="scope">
                                 <span>{{ statusZh(scope.row.status) }}</span>
                             </template>
                         </el-table-column>
                         <el-table-column prop="remark" label="备注" min-width="100" align="center"
                             :show-overflow-tooltip="true" />
-                        <el-table-column label="操作" min-width="100" align="center">
+                        <el-table-column label="操作" min-width="80" align="center">
                             <template #default="scope">
                                 <el-button v-if="scope.row.status == 1" type="primary" text size="small"
                                     @click="handleWithdraw(scope.row)">

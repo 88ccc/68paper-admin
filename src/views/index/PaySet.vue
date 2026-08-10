@@ -6,7 +6,7 @@
             </div>
         </template>
         <el-alert title="排序数字越小越靠前" type="info" :closable="false" />
-        <div style="margin: 15px 10px;">
+        <div v-loading="loading" style="margin: 15px 10px;">
             <div class="pay-list">
                 <span class="pay-name">微信支付</span>
                 <el-switch v-model="pay_wechat" inline-prompt active-text="开启" inactive-text="关闭" />
@@ -64,8 +64,7 @@ const pay_ali = ref(false);
 const pay_ali_index = ref(1);
 const pay_card = ref(false);
 const pay_card_index = ref(1);
-// 内容 HTML
-const valueHtml = ref('')
+const loading = ref(false);
 onMounted(async () => {
     if (payType.value.length > 2) {
         const myArray = payType.value.split(",");
@@ -82,7 +81,7 @@ onMounted(async () => {
             }
         }
     }
-    if(functions.value.extensions == false){
+    if (functions.value.extensions == false) {
         pay_card.value = false;
         pay_card_index.value = 1;
     }
@@ -113,14 +112,21 @@ async function onSubmit() {
             paystr = paystr + "," + payset[i].name;
         }
     }
-    // 
-    let res = await paxios.post("/console/setPayType", { pay_type: paystr });
-    if (res.data.code == 0) {
-        ElMessage.success("设置成功");
-        payType.value = res.data.data;
-    } else {
-        ElMessage.error(res.data.msg);
+    loading.value = true;
+    try {
+        let res = await paxios.post("/console/setPayType", { pay_type: paystr });
+        if (res.data.code == 0) {
+            ElMessage.success("设置成功");
+            payType.value = res.data.data;
+        } else {
+            ElMessage.error(res.data.msg);
+        }
+    } catch (error) {
+        ElMessage.error('网络异常');
+        console.error('网络异常:', error);
     }
+    loading.value = false;
+
 }
 
 </script>
@@ -140,7 +146,8 @@ async function onSubmit() {
 .pay-name {
     width: 85px;
 }
-.pay-index{
+
+.pay-index {
     width: 40px;
 }
 </style>

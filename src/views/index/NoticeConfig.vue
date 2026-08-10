@@ -174,18 +174,26 @@ async function handleSubmit() {
             return;
         }
     }
+    dialogLoading.value = true;
+    try {
+        const res = await paxios.post("/console/updateUserNotice", {
+            position: editPosition.value,
+            content: editContent.value
+        });
+        if (res.data.code === 0) {
+            ElMessage.success("更新成功");
+            dialogVisible.value = false;
+            fetchUserNoticeList();
+        } else {
+            ElMessage.error(res.data.msg);
+        }
 
-    const res = await paxios.post("/console/updateUserNotice", {
-        position: editPosition.value,
-        content: editContent.value
-    });
-    if (res.data.code === 0) {
-        ElMessage.success("更新成功");
-        dialogVisible.value = false;
-        fetchUserNoticeList();
-    } else {
-        ElMessage.error(res.data.msg);
+    } catch (error) {
+        ElMessage.error('网络异常');
+        console.error('网络异常:', error);
     }
+    dialogLoading.value = false;
+
 
 }
 

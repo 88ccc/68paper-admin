@@ -2,7 +2,7 @@
     <el-dialog v-model="dialogVisible" :title="dialogTitle" :width="dialogWidth" :modal="true"
         :close-on-click-modal="false">
         <!-- 弹窗内容 -->
-        <el-form label-width="auto">
+        <el-form v-loading="dialogLoading" label-width="auto">
             <el-form-item label="验证方式：">
                 <el-select v-model="form.type" placeholder="请选择" @change="handleChange" :disabled="typedisable">
                     <el-option v-for="item in verifyType" :key="item.value" :label="item.label" :value="item.value">
@@ -62,7 +62,7 @@ import { storeToRefs } from "pinia"
 let websitConfigStore = useWebsitConfigStore()
 const { apiUrl } = storeToRefs(websitConfigStore)
 
-const { userEmail, userPhone,userId } = useUserInfoStore()
+const { userEmail, userPhone, userId } = useUserInfoStore()
 
 const loading = ref(false)
 const action = ref('')
@@ -72,6 +72,7 @@ const countDown = ref(60)
 const dialogVisible = ref(false)
 const typedisable = ref(false)
 const dialogTitle = ref('')
+const dialogLoading = ref(false);
 const form = ref({
     type: '',
     account: '',
@@ -117,6 +118,7 @@ function toShowApiKey() {
         ElMessage.warning('请输入验证码')
         return
     }
+    dialogLoading.value = true;
     paxios.post("/console/getCardKey", { verifyType: form.value.type, code: form.value.code }).then(res => {
         if (res.data.code == 0) {
             ElMessageBox.alert(res.data.data.cardkey, '用户密钥', {
@@ -125,11 +127,13 @@ function toShowApiKey() {
         } else {
             ElMessage.error(res.data.msg)
         }
-    }).catch(err => { ElMessage.error(err.message) })
+    }).catch(err => { ElMessage.error(err.message) }).finally(() => {
+        dialogLoading.value = false;
+    })
 }
 
 function toRestApiKey() {
-    
+
     paxios.post("/console/resetCardKey").then(res => {
         if (res.data.code == 0) {
             dialogVisible.value = false

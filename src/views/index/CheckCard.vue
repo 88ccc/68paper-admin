@@ -304,6 +304,7 @@ async function createCard() {
         return;
     }
     try {
+        dialogLoading.value = true;
         const ret = await paxios.post('/console/createCheckCard', {
             piece: rwData.value.piece,
             product_id: rwData.value.product_id,
@@ -321,6 +322,7 @@ async function createCard() {
         ElMessage.error('禁用失败');
         console.error('禁用失败:', error);
     }
+    dialogLoading.value = false;
 
 }
 

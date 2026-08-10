@@ -84,7 +84,7 @@
                     </el-table-column>
                     <el-table-column label="状态" min-width="100" align="center">
                         <template #default="scope">
-                            {{ statustoStr(scope.row.status) }}
+                            <span :class="getStatusClass(scope.row.status)">{{ statustoStr(scope.row.status) }}</span>
                         </template>
                     </el-table-column>
                     <el-table-column prop="remark" label="备注" min-width="100" align="center">
@@ -151,6 +151,22 @@ function statustoStr(status: number) {
         return "报告删除"
     }
     return "";
+}
+
+function getStatusClass(status: number) {
+    const map: Record<number, string> = {
+        1: 'status-processing',   // 解析中
+        2: 'status-pending',      // 待付款
+        3: 'status-error',        // 解析失败
+        4: 'status-processing',   // 检测中
+        5: 'status-processing',   // 检测中
+        6: 'status-processing',   // 检测中
+        7: 'status-error',        // 检测失败
+        8: 'status-done',         // 检测成功
+        9: 'status-neutral',      // 已经退款
+        10: 'status-neutral',     // 报告删除
+    }
+    return map[status] || ''
 }
 
 const getSystemName = (system: string) => {
@@ -237,6 +253,13 @@ onMounted(async () => {
 
 </script>
 <style scoped>
+/* 状态文字配色 */
+.status-processing { color: #409EFF; }   /* 进行中 — 蓝色 */
+.status-pending { color: #E6A23C; }      /* 需关注 — 橙色 */
+.status-error { color: #F56C6C; }        /* 错误 — 红色 */
+.status-done { color: #409EFF; }         /* 已完结 — 蓝色 */
+.status-neutral { color: #909399; }      /* 中性 — 灰色 */
+
 .table-container {
     margin-top: 10px;
     margin-bottom: 16px;

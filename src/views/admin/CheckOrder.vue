@@ -18,7 +18,7 @@
                             <el-input v-model="searchForm.payid" placeholder="请输入支付ID" clearable class="search-input" />
                         </el-col>
                         <el-col :xs="12" :sm="8" :lg="6">
-                            <el-input v-model="searchForm.shopid" placeholder="请输入用户ID" clearable
+                            <el-input v-model="searchForm.userid" placeholder="请输入用户ID" clearable
                                 class="search-input" />
                         </el-col>
 
@@ -76,7 +76,8 @@
                     </el-table-column>
                     <el-table-column label="状态" min-width="100" align="center">
                         <template #default="scope">
-                            {{ statustoStr(scope.row.status) }}
+                            <span :class="getStatusClass(scope.row.status)">{{ statustoStr(scope.row.status) }}</span>
+
                         </template>
                     </el-table-column>
                     <el-table-column prop="remark" label="备注" min-width="80" align="center" />
@@ -115,13 +116,13 @@ interface Pagination {
 interface SearchForm {
     orderid: string;
     payid: string;
-    shopid: string;
+    userid: string;
 }
 // 搜索表单数据
 const searchForm = reactive<SearchForm>({
     orderid: '',
     payid: "",
-    shopid: "",
+    userid: "",
 });
 
 const checkProducts = ref<any[]>([])
@@ -149,6 +150,22 @@ function statustoStr(status: number) {
         return "报告删除"
     }
     return "";
+}
+
+function getStatusClass(status: number) {
+    const map: Record<number, string> = {
+        1: 'status-processing',   // 解析中
+        2: 'status-pending',      // 待付款
+        3: 'status-error',        // 解析失败
+        4: 'status-success',      // 用户支付成功
+        5: 'status-success',      // 供货成功
+        6: 'status-success',      // 供货成功
+        7: 'status-error',        // 供货失败
+        8: 'status-done',         // 检测成功
+        9: 'status-neutral',      // 已经退款
+        10: 'status-neutral',     // 报告删除
+    }
+    return map[status] || ''
 }
 
 const getSystemName = (system: string) => {
@@ -197,9 +214,9 @@ const fetchProductList = async () => {
         if (payid.length > 1) {
             url = url + "&payid=" + payid;
         }
-        let shopid = searchForm.shopid.trim();
-        if (shopid.length > 1) {
-            url = url + "&shopid=" + shopid;
+        let userid = searchForm.userid.trim();
+        if (userid.length > 1) {
+            url = url + "&userid=" + userid;
         }
 
 
@@ -272,6 +289,14 @@ async function orderRefund(row: any) {
 
 </script>
 <style scoped>
+/* 状态文字配色 */
+.status-processing { color: #409EFF; }   /* 解析中 — 蓝色，进行中 */
+.status-pending { color: #E6A23C; }      /* 待付款 — 橙色，需关注 */
+.status-error { color: #F56C6C; }        /* 失败 — 红色，错误 */
+.status-success { color: #67C23A; }      /* 成功 — 绿色，已完成 */
+.status-done { color: #409EFF; }         /* 检测完成 — 蓝色，已完结 */
+.status-neutral { color: #909399; }      /* 退款/删除 — 灰色，中性 */
+
 .table-container {
     margin-top: 10px;
     margin-bottom: 16px;

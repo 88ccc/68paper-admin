@@ -1,5 +1,159 @@
 <template>
     <el-config-provider :locale="zhCn">
+        <el-dialog v-model="dialogDetailsVisible" title="订单详情" :width="dialogWidth" :close-on-click-modal="false"
+            show-close>
+            <el-descriptions v-if="dialogDetails" class="margin-top" label-width="100px" :column="1" border>
+                <el-descriptions-item>
+                    <template #label>
+                        <div class="cell-item">
+                            订单号
+                        </div>
+                    </template>
+                    {{ dialogDetails.id }}
+                </el-descriptions-item>
+                <el-descriptions-item v-if="dialogDetails.payid">
+                    <template #label>
+                        <div class="cell-item">
+                            支付ID
+                        </div>
+                    </template>
+                    {{ dialogDetails.payid }}
+                </el-descriptions-item>
+                <el-descriptions-item>
+                    <template #label>
+                        <div class="cell-item">
+                            销售员
+                        </div>
+                    </template>
+                    {{ dialogDetails.userid }}
+                </el-descriptions-item>
+                <el-descriptions-item v-show="dialogDetails.tid">
+                    <template #label>
+                        <div class="cell-item">
+                            邀请人
+                        </div>
+                    </template>
+                    {{ dialogDetails.tid }}
+                </el-descriptions-item>
+                <el-descriptions-item>
+                    <template #label>
+                        <div class="cell-item">
+                            提交时间
+                        </div>
+                    </template>
+                    {{ dialogDetails.create_time }}
+                </el-descriptions-item>
+                <el-descriptions-item v-show="dialogDetails.title">
+                    <template #label>
+                        <div class="cell-item">
+                            标题
+                        </div>
+                    </template>
+                    {{ dialogDetails.title }}
+                </el-descriptions-item>
+                <el-descriptions-item v-show="dialogDetails.author">
+                    <template #label>
+                        <div class="cell-item">
+                            作者
+                        </div>
+                    </template>
+                    {{ dialogDetails.author }}
+                </el-descriptions-item>
+                <el-descriptions-item v-show="dialogDetails.end_date">
+                    <template #label>
+                        <div class="cell-item">
+                            发表时间
+                        </div>
+                    </template>
+                    {{ dialogDetails.end_date }}
+                </el-descriptions-item>
+                <el-descriptions-item v-show="dialogDetails.words">
+                    <template #label>
+                        <div class="cell-item">
+                            字符数
+                        </div>
+                    </template>
+                    {{ dialogDetails.words }}
+                </el-descriptions-item>
+                <el-descriptions-item v-show="dialogDetails.piece">
+                    <template #label>
+                        <div class="cell-item">
+                            件数
+                        </div>
+                    </template>
+                    {{ dialogDetails.piece }}
+                </el-descriptions-item>
+                <el-descriptions-item v-show="dialogDetails.unit_price">
+                    <template #label>
+                        <div class="cell-item">
+                            单价
+                        </div>
+                    </template>
+                    {{ (dialogDetails.unit_price ?? 0) / 100 }}元
+                </el-descriptions-item>
+                <el-descriptions-item v-show="dialogDetails.total_price">
+                    <template #label>
+                        <div class="cell-item">
+                            总价
+                        </div>
+                    </template>
+                    {{ (dialogDetails.total_price ?? 0) / 100 }}元
+                </el-descriptions-item>
+                <template v-if="dialogDetails.status > 3">
+                    <el-descriptions-item>
+                        <template #label>
+                            <div class="cell-item">
+                                付款时间
+                            </div>
+                        </template>
+                        {{ dialogDetails.pay_time }}
+                    </el-descriptions-item>
+                    <el-descriptions-item>
+                        <template #label>
+                            <div class="cell-item">
+                                销售提成
+                            </div>
+                        </template>
+                        {{ (dialogDetails.profit ?? 0) / 100 }}元
+                    </el-descriptions-item>
+                    <el-descriptions-item v-show="dialogDetails.tid != 0">
+                        <template #label>
+                            <div class="cell-item">
+                                邀请人提成
+                            </div>
+                        </template>
+                        {{ (dialogDetails.tprofit ?? 0) / 100 }}元
+                    </el-descriptions-item>
+                    <el-descriptions-item>
+                        <template #label>
+                            <div class="cell-item">
+                                平台利润
+                            </div>
+                        </template>
+                        {{ (dialogDetails.pprofit ?? 0) / 100 }}元
+                    </el-descriptions-item>
+                </template>
+                <el-descriptions-item>
+                    <template #label>
+                        <div class="cell-item">
+                            状态
+                        </div>
+                    </template>
+                    <span :class="getStatusClass(dialogDetails.status)">{{ statustoStr(dialogDetails.status) }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item v-show="dialogDetails.remark">
+                        <template #label>
+                            <div class="cell-item">
+                                备注
+                            </div>
+                        </template>
+                        {{ dialogDetails.remark }}元
+                    </el-descriptions-item>
+            </el-descriptions>
+            <div style="text-align: center;margin-top: 10px">
+                <el-button type="primary"  @click="dialogDetailsVisible = false">关闭</el-button>
+            </div>
+        </el-dialog>
         <el-card>
             <template #header>
                 <div class="card-header">
@@ -49,20 +203,21 @@
                     <el-table-column prop="payid" label="支付ID" min-width="120" align="center" />
                     <el-table-column label="利润" min-width="140" align="center" :show-overflow-tooltip="true">
                         <template #default="scope">
-                            成本:{{ scope.row.pcost / 100 }} 元<br />
-                            利润:{{ scope.row.pprofit / 100 }}元
+                            <span v-if="scope.row.pcost">成本:{{ scope.row.pcost / 100 }} 元<br /></span>
+                            <span v-if="scope.row.pprofit">利润:{{ scope.row.pprofit / 100 }}元</span>
+
                         </template>
                     </el-table-column>
                     <el-table-column label="售价" min-width="140" align="center" :show-overflow-tooltip="true">
                         <template #default="scope">
-                            单价:{{ scope.row.unit_price / 100 }} 元<br />
-                            总价:{{ scope.row.total_price / 100 }}元
+                            <span v-if="scope.row.unit_price">单价:{{ scope.row.unit_price / 100 }} 元<br /></span>
+                            <span v-if="scope.row.total_price">总价:{{ scope.row.total_price / 100 }}元</span>
                         </template>
                     </el-table-column>
                     <el-table-column label="字数" min-width="120" align="center">
                         <template #default="scope">
-                            字数: {{ scope.row.words }}<br />
-                            件数: {{ scope.row.piece }}
+                            <span v-if="scope.row.words">字数: {{ scope.row.words }}<br /></span>
+                            <span v-if="scope.row.piece">件数: {{ scope.row.piece }}</span>
                         </template>
                     </el-table-column>
                     <el-table-column prop="create_time" label="提交时间" min-width="120" align="center" />
@@ -81,10 +236,13 @@
                         </template>
                     </el-table-column>
                     <el-table-column prop="remark" label="备注" min-width="80" align="center" />
-                    <el-table-column label="操作" min-width="120" align="center">
+                    <el-table-column label="操作" min-width="140" align="center">
                         <template #default="scope">
-                            <el-button v-show="scope.row.status >= 4 && scope.row.status != 9" type="primary" text
-                                size="small" @click="orderRefund(scope.row)">
+                            <el-button type="primary" text size="small" @click="showDetails(scope.row)">
+                                详情
+                            </el-button>
+                            <el-button v-show="scope.row.status >= 4 && scope.row.status != 9" type="warning" text
+                                size="small" style="margin-left: 10px" @click="orderRefund(scope.row)">
                                 退款
                             </el-button>
 
@@ -102,10 +260,9 @@
     </el-config-provider>
 </template>
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import { paxios } from '@/utils/paxios'
-import type { FormInstance, FormRules } from 'element-plus'
 // 定义分页类型
 interface Pagination {
     currentPage: number;
@@ -126,6 +283,18 @@ const searchForm = reactive<SearchForm>({
 });
 
 const checkProducts = ref<any[]>([])
+const dialogDetailsVisible = ref(false)
+const dialogWidth = ref('600px')
+const dialogDetails = ref<any>(null)
+
+const handleResize = () => {
+    if (window.innerWidth < 768) {
+        dialogWidth.value = "92%";
+    } else {
+        dialogWidth.value = "600px";
+
+    }
+};
 
 function statustoStr(status: number) {
     if (status == 1) {
@@ -150,6 +319,15 @@ function statustoStr(status: number) {
         return "报告删除"
     }
     return "";
+}
+
+function showDetails(row: any) {
+    dialogDetails.value=null;
+    nextTick(() => {
+        dialogDetails.value = { ...row };
+        dialogDetailsVisible.value = true;
+    })
+
 }
 
 function getStatusClass(status: number) {
@@ -241,6 +419,8 @@ function handleSearch() {
 
 
 onMounted(async () => {
+    handleResize();
+    window.addEventListener('resize', handleResize);
     try {
         let url = '/index/getCheckIdAndName';
         const res1 = await paxios.get(url);
@@ -253,6 +433,9 @@ onMounted(async () => {
         ElMessage.error("获取产品信息失败");
     }
     fetchProductList();
+});
+onUnmounted(() => {
+    window.removeEventListener('resize', handleResize);
 });
 
 
@@ -290,12 +473,36 @@ async function orderRefund(row: any) {
 </script>
 <style scoped>
 /* 状态文字配色 */
-.status-processing { color: #409EFF; }   /* 解析中 — 蓝色，进行中 */
-.status-pending { color: #E6A23C; }      /* 待付款 — 橙色，需关注 */
-.status-error { color: #F56C6C; }        /* 失败 — 红色，错误 */
-.status-success { color: #67C23A; }      /* 成功 — 绿色，已完成 */
-.status-done { color: #409EFF; }         /* 检测完成 — 蓝色，已完结 */
-.status-neutral { color: #909399; }      /* 退款/删除 — 灰色，中性 */
+.status-processing {
+    color: #409EFF;
+}
+
+/* 解析中 — 蓝色，进行中 */
+.status-pending {
+    color: #E6A23C;
+}
+
+/* 待付款 — 橙色，需关注 */
+.status-error {
+    color: #F56C6C;
+}
+
+/* 失败 — 红色，错误 */
+.status-success {
+    color: #67C23A;
+}
+
+/* 成功 — 绿色，已完成 */
+.status-done {
+    color: #409EFF;
+}
+
+/* 检测完成 — 蓝色，已完结 */
+.status-neutral {
+    color: #909399;
+}
+
+/* 退款/删除 — 灰色，中性 */
 
 .table-container {
     margin-top: 10px;

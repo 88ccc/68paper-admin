@@ -44,11 +44,12 @@
                     <el-table-column label="利润" min-width="120" align="center" :show-overflow-tooltip="true">
                         <template #default="scope">
                             <span v-if="scope.row.userid == userId">
-                                成本:{{ scope.row.cost / 100 }} 元<br />
-                                利润:{{ scope.row.profit / 100 }}元
+                                <span v-if="scope.row.cost">成本:{{ scope.row.cost / 100 }} 元<br /></span>
+                                <span v-if="scope.row.profit">利润:{{ scope.row.profit / 100 }}元<br /></span>
+
                             </span>
                             <span v-if="scope.row.tid == userId">
-                                利润:{{ scope.row.tprofit / 100 }}元
+                                <span v-if="scope.row.tprofit">利润:{{ scope.row.tprofit / 100 }} 元<br /></span>
                             </span>
 
                         </template>
@@ -56,20 +57,20 @@
                     <el-table-column label="售价" min-width="120" align="center" :show-overflow-tooltip="true">
                         <template #default="scope">
                             <span v-if="scope.row.userid == userId">
-                                单价:{{ scope.row.unit_price / 100 }} 元<br />
-                                总价:{{ scope.row.total_price / 100 }}元
+                                <span v-if="scope.row.unit_price">单价:{{ scope.row.unit_price / 100 }} 元<br /></span>
+                                <span v-if="scope.row.total_price">总价:{{ scope.row.total_price / 100 }}元</span>
                             </span>
                         </template>
                     </el-table-column>
                     <el-table-column label="字数" min-width="120" align="center">
                         <template #default="scope">
                             <span v-if="scope.row.userid == userId">
-                                字数: {{ scope.row.words }}<br />
-                                件数: {{ scope.row.piece }}
+                                <span v-if="scope.row.words">字数:{{ scope.row.words }}<br /></span>
+                                <span v-if="scope.row.piece">件数:{{ scope.row.piece }}</span>
                             </span>
                             <span v-if="scope.row.tid == userId">
-                                字数: {{ scope.row.words }}<br />
-                                件数: {{ scope.row.ppiece }}
+                                <span v-if="scope.row.words">字数: {{ scope.row.words }}<br /></span>
+                                <span v-if="scope.row.ppiece">件数: {{ scope.row.ppiece }}</span>
                             </span>
                         </template>
                     </el-table-column>
@@ -79,7 +80,7 @@
                         <template #default="scope">
                             <span v-show="scope.row.title">标题: {{ scope.row.title }}<br /></span>
                             <span v-show="scope.row.author">作者:{{ scope.row.author }}</span>
-                            <span v-show="scope.row.end_date">发表日期:{{ scope.row.end_date }}</span>
+                            <span v-show="scope.row.end_date"> 发表日期:{{ scope.row.end_date }}</span>
                         </template>
                     </el-table-column>
                     <el-table-column label="状态" min-width="100" align="center">
@@ -254,11 +255,31 @@ onMounted(async () => {
 </script>
 <style scoped>
 /* 状态文字配色 */
-.status-processing { color: #409EFF; }   /* 进行中 — 蓝色 */
-.status-pending { color: #E6A23C; }      /* 需关注 — 橙色 */
-.status-error { color: #F56C6C; }        /* 错误 — 红色 */
-.status-done { color: #409EFF; }         /* 已完结 — 蓝色 */
-.status-neutral { color: #909399; }      /* 中性 — 灰色 */
+.status-processing {
+    color: #409EFF;
+}
+
+/* 进行中 — 蓝色 */
+.status-pending {
+    color: #E6A23C;
+}
+
+/* 需关注 — 橙色 */
+.status-error {
+    color: #F56C6C;
+}
+
+/* 错误 — 红色 */
+.status-done {
+    color: #409EFF;
+}
+
+/* 已完结 — 蓝色 */
+.status-neutral {
+    color: #909399;
+}
+
+/* 中性 — 灰色 */
 
 .table-container {
     margin-top: 10px;

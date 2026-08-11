@@ -6,6 +6,14 @@
                 <el-descriptions-item>
                     <template #label>
                         <div class="cell-item">
+                            产品
+                        </div>
+                    </template>
+                    {{ getSystemName(dialogDetails.product_id) }}
+                </el-descriptions-item>
+                <el-descriptions-item>
+                    <template #label>
+                        <div class="cell-item">
                             订单号
                         </div>
                     </template>

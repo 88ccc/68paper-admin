@@ -121,7 +121,9 @@
                         </el-table-column>
                         <el-table-column label="状态" min-width="80" align="center" :show-overflow-tooltip="true">
                             <template #default="scope">
-                                <span>{{ statusZh(scope.row.status) }}</span>
+                                <el-tag :type="getStatusType(scope.row.status)" size="small">
+                                    {{ statusZh(scope.row.status) }}
+                                </el-tag>
                             </template>
                         </el-table-column>
                         <el-table-column prop="remark" label="备注" min-width="100" align="center"
@@ -234,6 +236,17 @@ onUnmounted(() => {
     window.removeEventListener('resize', handleResize);
 });
 
+function getStatusType(status: number) {
+    if (status == 1) {
+        return "warning";
+    } else if (status == 2) {
+        return "success";
+    } else if (status == 3) {
+        return "danger";
+    }
+    return "info";
+}
+
 function statusZh(status: number) {
     switch (status) {
         case 1:
@@ -243,7 +256,7 @@ function statusZh(status: number) {
         case 3:
             return '提现失败';
         default:
-            return '未知';
+            return '' + status;
     }
 }
 

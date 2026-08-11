@@ -84,10 +84,8 @@
                         :show-overflow-tooltip="true" />
                     <el-table-column prop="status" label="状态" min-width="100" align="center">
                         <template #default="scope">
-                            <el-tag :type="scope.row.status === 1 ? 'info' :
-                                scope.row.status === 2 ? 'success' : 'danger'" size="small">
-                                {{ scope.row.status === 1 ? '待审核' :
-                                    scope.row.status === 2 ? '审核通过' : '审核被拒' }}
+                            <el-tag :type="getStatusType(scope.row.status)" size="small">
+                                {{ getStatusStr(scope.row.status) }}
                             </el-tag>
                         </template>
                     </el-table-column>
@@ -189,6 +187,28 @@ const getSystemName = (system: string) => {
         }
     }
     return '';
+}
+
+function getStatusType(status: number) {
+    if (status == 1) {
+        return "warning";
+    } else if (status == 2) {
+        return "success";
+    } else if (status == 3) {
+        return "danger";
+    }
+    return "info";
+}
+
+function getStatusStr(status: number) {
+    if (status == 1) {
+        return "待审核";
+    } else if (status == 2) {
+        return "审核通过";
+    } else if (status == 3) {
+        return "审核被拒";
+    }
+    return "" + status;
 }
 
 

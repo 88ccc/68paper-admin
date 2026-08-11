@@ -65,7 +65,9 @@
                     <el-table-column prop="file_time" label="上传时间" min-width="120" align="center" />
                     <el-table-column label="状态" min-width="100" align="center">
                         <template #default="scope">
-                            {{ statusstr(scope.row.file_status) }}
+                            <el-tag :type="getStatusType(scope.row.file_status)" size="small">
+                                {{ statusstr(scope.row.file_status) }}
+                            </el-tag>
                         </template>
                     </el-table-column>
                     <el-table-column label="操作" min-width="120" align="center">
@@ -210,6 +212,17 @@ function toAudit(row: any | null) {
 
     dialogStatusVisible.value = true;
 
+}
+
+function getStatusType(status: number) {
+    if (status == 1) {
+        return "warning";
+    } else if (status == 2) {
+        return "success";
+    } else if (status == 3 || status == 4) {
+        return "danger";
+    }
+    return "info";
 }
 
 function statusstr(status: number) {

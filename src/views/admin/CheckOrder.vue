@@ -107,6 +107,14 @@
                     </template>
                     {{ (dialogDetails.total_price ?? 0) / 100 }}元
                 </el-descriptions-item>
+                <el-descriptions-item v-show="dialogDetails.pcost">
+                    <template #label>
+                        <div class="cell-item">
+                            成本
+                        </div>
+                    </template>
+                    {{ (dialogDetails.pcost ?? 0) / 100 }}元
+                </el-descriptions-item>
                 <template v-if="dialogDetails.status > 3">
                     <el-descriptions-item>
                         <template #label>

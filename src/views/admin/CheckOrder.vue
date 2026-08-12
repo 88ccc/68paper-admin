@@ -94,7 +94,7 @@
                 <el-descriptions-item v-show="dialogDetails.unit_price">
                     <template #label>
                         <div class="cell-item">
-                            单价
+                            销售单价
                         </div>
                     </template>
                     {{ (dialogDetails.unit_price ?? 0) / 100 }}元
@@ -102,7 +102,7 @@
                 <el-descriptions-item v-show="dialogDetails.total_price">
                     <template #label>
                         <div class="cell-item">
-                            总价
+                            销售总价
                         </div>
                     </template>
                     {{ (dialogDetails.total_price ?? 0) / 100 }}元

@@ -204,7 +204,8 @@ const handleAccountType = ref("")
 const handleAccount = ref("")
 const handleCharge = ref(0.0);
 const handleAmount = computed(() => {
-    return handleMoney.value - handleCharge.value;
+    // 按"分"（整数）运算再除以100，避免浮点误差：34.15 - 0.34 = 33.81 而非 33.80999999999995
+    return (Math.round(handleMoney.value * 100) - Math.round(handleCharge.value * 100)) / 100;
 });
 const handleStatus = ref(0);
 const handleRemark = ref("");
@@ -366,8 +367,8 @@ async function withdrawSubmit() {
     let res = await paxios.post("/manage/withdrawHandle", {
         id: handleid.value,
         userid: handleUserid.value,
-        charge: handleCharge.value * 100,
-        amount: handleAmount.value * 100,
+        charge: Math.round(handleCharge.value * 100),
+        amount: Math.round(handleAmount.value * 100),
         status: handleStatus.value,
         remark: handleRemark.value,
     });

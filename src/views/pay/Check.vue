@@ -192,7 +192,7 @@ function onBridgeReady(data: any) {
                         } catch (error) {
                             console.error('查询订单状态错误：', error);
                         }
-                    }, 5000);
+                    }, 3000);
                 } else if (res.err_msg == "get_brand_wcpay_request:cancel") {
                     ElMessage.info('支付已取消');
                 } else {

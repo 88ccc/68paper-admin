@@ -218,7 +218,7 @@ onMounted(async () => {
 
     let res1 = await paxios.get("/console/getPoints");
     if (res1.data.code == 0) {
-        userPoints.value = res1.data.data.points/100;
+        userPoints.value = res1.data.data.points / 100;
     } else {
         ElMessage.error("获取账户积分失败");
     }
@@ -323,12 +323,14 @@ async function showPayQRcode() {
                     if (ret.data.code == 0) {
                         if (ret.data.data.status == 1) {
                             //支付成功
+                            clearInterval(timer);
+                            timer = null;
                             showQRCodeDialog.value = false;
                             showPaymentResult.value = true;
                             paymentStatus.value = 'success';
                             let res1 = await paxios.get("/console/getPoints");
                             if (res1.data.code == 0) {
-                                userPoints.value = res1.data.data.points/100;
+                                userPoints.value = res1.data.data.points / 100;
                             } else {
                                 ElMessage.error("获取账户积分失败");
                             }
@@ -337,7 +339,7 @@ async function showPayQRcode() {
                 } catch (error) {
                     console.error('查询订单状态错误：', error);
                 }
-            }, 5000);
+            }, 3000);
         } else {
             ElMessage.error(res.data.msg);
         }
@@ -408,8 +410,8 @@ function onBridgeReady(data: any) {
                     // 支付成功，轮询查询订单状态确认支付结果
                     timer = setInterval(async () => {
                         try {
-                            let ret = await paxios.post("/console/payquery", { oid: orderId.value });
-                            if (ret.data.code == 0 && ret.data.status == 1) {
+                            let ret = await paxios.post("/index/payquery", { payid: orderId.value });
+                            if (ret.data.code == 0 && ret.data.data.status == 1) {
                                 clearInterval(timer);
                                 timer = null;
                                 showPaymentResult.value = true;
@@ -417,7 +419,7 @@ function onBridgeReady(data: any) {
                                 ElMessage.success('支付成功');
                                 let res1 = await paxios.get("/console/getPoints");
                                 if (res1.data.code == 0) {
-                                    userPoints.value = res1.data.data.points/100;
+                                    userPoints.value = res1.data.data.points / 100;
                                 } else {
                                     ElMessage.error("获取账户积分失败");
                                 }
@@ -425,7 +427,7 @@ function onBridgeReady(data: any) {
                         } catch (error) {
                             console.error('查询订单状态错误：', error);
                         }
-                    }, 5000);
+                    }, 3000);
                 } else if (res.err_msg == "get_brand_wcpay_request:cancel") {
                     ElMessage.info('支付已取消');
                 } else {

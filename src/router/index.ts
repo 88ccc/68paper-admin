@@ -211,6 +211,18 @@ const router = createRouter({
         }, {
           path: "deleteuser",
           component: () => import("@/views/admin/DeleteUser.vue")
+        },{
+          //用户积分记录
+          path:"pointsrecord",
+          component: () => import("@/views/admin/PointsRecord.vue"),
+        },{
+          //用户余额记录
+          path:"balancerecord",
+          component: () => import("@/views/admin/BalanceRecord.vue"),
+        },{
+          //用户支付记录
+          path:"payrecord",
+          component: () => import("@/views/admin/PayRecord.vue"),
         }
       ]
     }, {

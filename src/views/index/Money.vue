@@ -128,12 +128,6 @@ function changeTypeZh(type: number) {
         case 5:
             return '提现';
         case 6:
-            return '转账收入';
-        case 7:
-            return '转账支出';
-        case 8:
-            return '系统调整';
-        case 9:
             return '其他';
         default:
             return '未知';

@@ -1,18 +1,23 @@
 <template>
-
     <el-config-provider :locale="zhCn">
-        <el-card>
-            <template #header>
-                <div class="card-header">
-                    <span>积分记录</span>
-                </div>
-            </template>
-            <div class="user-list-container">
+        <div style="text-align: center;font-size: large;">
+            <h1>支付记录</h1>
+        </div>
+        <div class="user-list-container">
             <div class="search-bar">
                 <el-row :gutter="16">
                     <!-- 响应式配置：大屏幕6列，平板8列，手机12列（占满整行） -->
                     <el-col :xs="12" :sm="8" :lg="6">
-                        <el-input v-model="searchForm.oid" placeholder="输入订单号" clearable class="search-input" />
+                        <el-input v-model="searchForm.userId" placeholder="请输入用户ID" clearable class="search-input" />
+                    </el-col>
+                    <el-col :xs="12" :sm="8" :lg="6">
+                        <el-input v-model="searchForm.payid" placeholder="支付单号" clearable class="search-input" />
+                    </el-col>
+                    <el-col :xs="12" :sm="8" :lg="6">
+                        <el-select v-model="searchForm.scene" placeholder="请选择场景" clearable class="search-select">
+                            <el-option label="销售产品" value="1" />
+                            <el-option label="积分充值" value="2" />
+                        </el-select>
                     </el-col>
                     <el-col :xs="6" :sm="8" :lg="2">
                         <el-button type="primary" @click="handleSearch" class="search-btn">
@@ -28,34 +33,42 @@
             <div class="table-container">
                 <el-table :data="tableData" border stripe style="width: 100%" v-loading="loading"
                     :cell-style="{ 'padding': '8px 5px' }" :header-cell-style="{ 'padding': '10px 5px' }">
-                    <el-table-column prop="create_time" label="发生时间" min-width="140" align="center"
-                    :show-overflow-tooltip="true" />
-                    <el-table-column label="变更前" min-width="140" align="center" :show-overflow-tooltip="true">
+                    <el-table-column prop="userid" label="用户ID" min-width="80" align="center" />
+                    <el-table-column prop="id" label="支付单号" min-width="120" align="center" />
+                     <el-table-column label="场景" min-width="100" align="center" :show-overflow-tooltip="true">
                         <template #default="scope">
-                            <span >{{ scope.row.before_balance/100 }}元</span>
+                            <span>{{ paySceneStr(scope.row.scene) }}</span>
                         </template>
                     </el-table-column>
-                    <el-table-column label="变更金额" min-width="140" align="center" :show-overflow-tooltip="true">
+                    <el-table-column label="支付方式" min-width="120" align="center" :show-overflow-tooltip="true">
                         <template #default="scope">
-                            <span >{{ scope.row.change_amount/100 }}元</span>
+                            <span>{{ paymethodStr(scope.row.method) }}</span>
                         </template>
                     </el-table-column>
-                    <el-table-column label="变更后余额" min-width="140" align="center" :show-overflow-tooltip="true">
+                    <el-table-column prop="subject" label="商品名称" min-width="140" align="center"
+                        :show-overflow-tooltip="true" />
+                    <el-table-column label="金额" min-width="120" align="center" :show-overflow-tooltip="true">
                         <template #default="scope">
-                            <span >{{ scope.row.after_balance/100 }}元</span>
+                            <span>{{ scope.row.price }}元</span>
                         </template>
                     </el-table-column>
-                    <el-table-column label="类型" min-width="140" align="center" :show-overflow-tooltip="true">
+                    <el-table-column label="状态" min-width="100" align="center" :show-overflow-tooltip="true">
                         <template #default="scope">
-                            <span >{{changeTypeZh(scope.row.change_type) }}</span>
+                            <span :class="{
+                                'text-red': scope.row.status === 2 || scope.row.status === 3,
+                                'text-blue': scope.row.status === 1
+                            }">
+                                {{ statusStr(scope.row.status) }}
+                            </span>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="business_no" label="订单号" min-width="140" align="center"
-                    :show-overflow-tooltip="true" />
-                    <el-table-column prop="remark" label="备注" min-width="140" align="center"
-                    :show-overflow-tooltip="true" />
 
-
+                    <el-table-column prop="tips" label="备注" min-width="120" align="center"
+                        :show-overflow-tooltip="true" />
+                    <el-table-column prop="create_time" label="创建时间" min-width="150" align="center"
+                        :show-overflow-tooltip="true" />
+                    <el-table-column prop="update_time" label="更新时间" min-width="150" align="center"
+                        :show-overflow-tooltip="true" />
                 </el-table>
             </div>
 
@@ -66,15 +79,12 @@
                     @current-change="handleCurrentChange" />
             </div>
         </div>
-        </el-card>
-
     </el-config-provider>
 </template>
 
 <script setup lang="ts">
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import { ref, reactive, onMounted } from 'vue';
-import { ElMessage } from 'element-plus';
 import { Search } from '@element-plus/icons-vue';  // 引入搜索图标
 import { paxios } from '@/utils/paxios';
 
@@ -82,7 +92,9 @@ import { paxios } from '@/utils/paxios';
 
 // 定义搜索表单类型
 interface SearchForm {
-    oid: string;
+    userId: string;
+    payid: string;
+    scene:string;
 }
 
 // 定义分页类型
@@ -94,7 +106,9 @@ interface Pagination {
 
 // 搜索表单数据
 const searchForm = reactive<SearchForm>({
-    oid: ''
+    userId: '',
+    payid: '',
+    scene:''
 });
 
 // 表格数据
@@ -110,46 +124,78 @@ const pagination = reactive<Pagination>({
     total: 0
 });
 
-// 初始化页面时加载数据
-onMounted(() => {
-    fetchDataList();
-});
+function paymethodStr(method: string) {
+    if (method == "alipay") {
+        return "支付宝";
+    } else if (method == "wechat") {
+        return "微信支付";
+    }
+    return method;
+}
 
-function changeTypeZh(type: number) {
-    switch (type) {
+function paySceneStr(scene:number){
+ switch (scene) {
         case 1:
-            return '充值';
+            return '销售产品';
         case 2:
-            return '消费';
-        case 3:
-            return '退款';
-        case 4:
-            return '赠送';
-        case 5:
-            return '提现';
-        case 6:
-            return '其他';
+            return '积分充值';
         default:
             return '未知';
     }
 }
 
+function statusStr(type: number) {
+    switch (type) {
+        case 0:
+            return '待支付';
+        case 1:
+            return '已支付';
+        case 2:
+            return '支付失败';
+        case 3:
+            return '已退款';
+        default:
+            return '未知';
+    }
+}
+
+
+// 初始化页面时加载数据
+onMounted(() => {
+
+    fetchUserList();
+});
+
 // 获取用户列表数据
-const fetchDataList = async () => {
+const fetchUserList = async () => {
     try {
         loading.value = true;
-        let url = '/console/getPointsList'
+        let url = '/manage/getPayRecordData'
         let flag = false;
-        if (searchForm.oid) {
+        if (searchForm.userId) {
             if (flag) {
-                url += '&oid=' + searchForm.oid;
+                url += '&userid=' + searchForm.userId;
             } else {
-                url += '?oid=' + searchForm.oid;
+                url += '?userid=' + searchForm.userId;
                 flag = true;
             }
         }
-       
-
+        if (searchForm.payid) {
+            if (flag) {
+                url += '&payid=' + searchForm.payid;
+            } else {
+                url += '?payid=' + searchForm.payid;
+                flag = true;
+            }
+        }
+        if (searchForm.scene) {
+            if (flag) {
+                url += '&scene=' + searchForm.scene;
+            } else {
+                url += '?scene=' + searchForm.scene;
+                flag = true;
+            }
+        }
         if (flag) {
             url += '&page=' + pagination.currentPage;
         } else {
@@ -172,8 +218,8 @@ const fetchDataList = async () => {
             ElMessage.error(res.data.msg);
         }
     } catch (error) {
-        ElMessage.error('获取记录失败');
-        console.error('获取记录错误:', error);
+        ElMessage.error('获取列表失败');
+        console.error('获取列表错误:', error);
     } finally {
         loading.value = false;
     }
@@ -183,24 +229,51 @@ const fetchDataList = async () => {
 const handleSearch = () => {
     // 重置页码为1
     pagination.currentPage = 1;
-    fetchDataList();
+    fetchUserList();
 };
 
 // 分页大小改变事件
 const handleSizeChange = (size: number) => {
     pagination.pageSize = size;
-    fetchDataList();
+    fetchUserList();
 };
 
 // 当前页码改变事件
 const handleCurrentChange = (page: number) => {
     pagination.currentPage = page;
-    fetchDataList();
+    fetchUserList();
 };
+
 
 </script>
 
 <style scoped>
+/* 字体颜色*/
+
+.text-red {
+    color: red;
+}
+
+.text-blue {
+    color: blue;
+}
+
+.text-green {
+    color: green;
+}
+
+.text-gray {
+    color: gray;
+}
+
+.text-orange {
+    color: #FF851B;
+}
+
+.text-yellow {
+    color: #FFDC00;
+}
+
 .user-list-container {
     padding: 16px;
     background-color: #fff;

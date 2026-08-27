@@ -153,10 +153,34 @@ function showAsideChange() {
                   </el-icon>
                   <span>删除用户</span>
                 </el-menu-item>
-                
-
               </el-sub-menu>
               <el-sub-menu index="2">
+                <template #title>
+                  <el-icon>
+                    <Money />
+                  </el-icon>
+                  <span>资金记录</span>
+                </template>
+                <el-menu-item index="/super/balancerecord">
+                  <el-icon class="menu-icon">
+                    <Document />
+                  </el-icon>
+                  <span>余额记录</span>
+                </el-menu-item>
+                <el-menu-item index="/super/pointsrecord">
+                  <el-icon class="menu-icon">
+                    <Document />
+                  </el-icon>
+                  <span>积分记录</span>
+                </el-menu-item>
+                <el-menu-item index="/super/payrecord">
+                  <el-icon class="menu-icon">
+                    <Document />
+                  </el-icon>
+                  <span>支付记录</span>
+                </el-menu-item>
+              </el-sub-menu>
+              <el-sub-menu index="3">
                 <template #title>
                   <el-icon>
                     <GoodsFilled />
@@ -176,7 +200,7 @@ function showAsideChange() {
                   <span>检测卡</span>
                 </el-menu-item>
               </el-sub-menu>
-              <el-sub-menu index="3">
+              <el-sub-menu index="4">
                 <template #title>
                   <el-icon>
                     <pi-wxpublic />
@@ -192,7 +216,7 @@ function showAsideChange() {
 
               </el-sub-menu>
 
-              <el-sub-menu index="4">
+              <el-sub-menu index="5">
                 <template #title>
                   <el-icon>
                     <pi-websit />
@@ -249,7 +273,7 @@ function showAsideChange() {
                 </el-menu-item>
 
               </el-sub-menu>
-              <el-sub-menu index="5">
+              <el-sub-menu index="6">
                 <template #title>
                   <el-icon>
                     <Position />
@@ -282,7 +306,7 @@ function showAsideChange() {
                 </el-menu-item>
               </el-sub-menu>
 
-              <el-sub-menu index="6">
+              <el-sub-menu index="7">
                 <template #title>
                   <el-icon>
                     <CreditCard />
@@ -302,7 +326,7 @@ function showAsideChange() {
                   <span>支付设置</span>
                 </el-menu-item>
               </el-sub-menu>
-              <el-sub-menu index="7">
+              <el-sub-menu index="8">
                 <template #title>
                   <el-icon>
                     <Setting />
@@ -334,7 +358,7 @@ function showAsideChange() {
                   <span>功能设置</span>
                 </el-menu-item>
               </el-sub-menu>
-              <el-sub-menu index="8">
+              <el-sub-menu index="9">
                 <template #title>
                   <el-icon>
                     <Key />
@@ -348,7 +372,7 @@ function showAsideChange() {
                   <span>检测秘钥</span>
                 </el-menu-item>
               </el-sub-menu>
-              <el-sub-menu index="9">
+              <el-sub-menu index="10">
                 <template #title>
                   <el-icon>
                     <Grid />
@@ -368,7 +392,7 @@ function showAsideChange() {
                   <span>产品提示</span>
                 </el-menu-item>
               </el-sub-menu>
-              <el-sub-menu index="10">
+              <el-sub-menu index="11">
                 <template #title>
                   <el-icon>
                     <Coordinate />

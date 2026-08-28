@@ -58,6 +58,9 @@
                 <div v-if="(!isSupportAlipay) && (!isSupportWechat)">
                     <el-alert :title="payWaring" type="warning" />
                 </div>
+                <div v-if="amountErr">
+                    <el-alert :title="amountErr" type="error" :closable="false" />
+                </div>
 
                 <!-- 支付按钮 -->
                 <div class="pay-button-container">
@@ -143,6 +146,7 @@ const qrcodeUrl = ref('');
 const qrLoading = ref(false);
 const orderId = ref('');
 const payFormRef: Ref<HTMLDivElement | null> = ref(null);
+const amountErr = ref('');
 
 
 const userPoints = ref(0.0);
@@ -235,10 +239,11 @@ onUnmounted(() => {
 const handleAmountInput = (value: number) => {
     if (value !== null) {
         if (value > 10000) {
-            amount.value = 10000;
-            ElMessage.warning('充值金额不能超过10000元');
-        } else if (value < 0) {
-            amount.value = 0;
+            amountErr.value = '充值金额不能超过10000元';
+        } else if (value < min_amount.value) {
+            amountErr.value = '充值金额不能低于' + min_amount.value + "元"
+        } else {
+            amountErr.value = '';
         }
     }
 };

@@ -45,7 +45,9 @@
                         </el-table-column>
                         <el-table-column label="状态" min-width="100" align="center" :show-overflow-tooltip="true">
                             <template #default="scope">
-                                <span>{{ statusZh(scope.row.status) }}</span>
+                                <el-tag :type="getStatusType(scope.row.status)" size="small">
+                                    {{ statusZh(scope.row.status) }}
+                                </el-tag>
                             </template>
                         </el-table-column>
                         <el-table-column prop="remark" label="备注" min-width="100" align="center"
@@ -72,9 +74,6 @@ import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import { ref, reactive, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { paxios } from '@/utils/paxios';
-
-
-
 
 
 // 定义分页类型
@@ -104,6 +103,17 @@ onMounted(() => {
     fetchDataList();
 });
 
+function getStatusType(status: number) {
+    if (status == 1) {
+        return "warning";
+    } else if (status == 2) {
+        return "success";
+    } else if (status == 3) {
+        return "danger";
+    }
+    return "info";
+}
+
 function statusZh(status: number) {
     switch (status) {
         case 1:
@@ -118,11 +128,11 @@ function statusZh(status: number) {
 }
 
 function accountTypeZh(type: string) {
-    if(type == "alipay"){
+    if (type == "alipay") {
         return "支付宝";
-    }else if(type == "wechat"){
+    } else if (type == "wechat") {
         return "微信手机号";
-    }else {
+    } else {
         return type;
     }
 }

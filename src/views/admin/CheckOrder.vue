@@ -324,9 +324,9 @@ function statustoStr(status: number) {
     } else if (status == 5) {
         return "供货成功";
     } else if (status == 6) {
-        return "供货成功";
-    } else if (status == 7) {
         return "供货失败";
+    } else if (status == 7) {
+        return "检测失败";
     } else if (status == 8) {
         return "检测成功";
     } else if (status == 9) {
@@ -353,8 +353,8 @@ function getStatusClass(status: number) {
         3: 'status-error',        // 解析失败
         4: 'status-success',      // 用户支付成功
         5: 'status-success',      // 供货成功
-        6: 'status-success',      // 供货成功
-        7: 'status-error',        // 供货失败
+        6: 'status-error',      // 供货失败
+        7: 'status-error',        // 检测失败
         8: 'status-done',         // 检测成功
         9: 'status-neutral',      // 已经退款
         10: 'status-neutral',     // 报告删除

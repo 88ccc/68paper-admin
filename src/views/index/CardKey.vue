@@ -39,7 +39,8 @@
         <div>
             用户ID&nbsp;&nbsp;:&nbsp;&nbsp;{{ userId }}<br /><br />
             用户密钥&nbsp;&nbsp;:&nbsp;&nbsp; *******<br /><br />
-            接口网关&nbsp;&nbsp;:&nbsp;&nbsp; {{ apiUrl }}<br /><br />
+            <!-- 接口网关&nbsp;&nbsp;:&nbsp;&nbsp; {{ apiUrl }}<br /><br /> -->
+            授权码&nbsp;&nbsp;:&nbsp;&nbsp; {{ providerGuid }}<br /><br />
         </div>
         <div style="margin-top: 35px;">
             <el-button type="primary" size="small" @click="showApiKey">显示</el-button>
@@ -73,6 +74,7 @@ const dialogVisible = ref(false)
 const typedisable = ref(false)
 const dialogTitle = ref('')
 const dialogLoading = ref(false);
+const providerGuid = ref('')
 const form = ref({
     type: '',
     account: '',
@@ -95,6 +97,11 @@ onMounted(() => {
     if (userPhone != '') {
         verifyType.value.push({ label: '手机验证', value: 'phone' });
     }
+    paxios.get("/index/getAgisoproviderGuid").then(res => {
+        if (res.data.code == 0) {
+            providerGuid.value = res.data.data.providerGuid;
+        }
+    }).catch(err => { ElMessage.error(err.message) })
 })
 
 function showApiKey() {

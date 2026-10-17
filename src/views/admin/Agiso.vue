@@ -12,6 +12,12 @@
             <el-form-item label="AppSecret:">
                 <el-input v-model="cardKey.secret" />
             </el-form-item>
+            <el-form-item label="供货商名称:">
+                <el-input v-model="cardKey.name" />
+            </el-form-item>
+            <el-form-item label="供货商手机:">
+                <el-input v-model="cardKey.phone" />
+            </el-form-item>
             <el-form-item label="测试">
                 <el-switch v-model="cardKey.test" inline-prompt active-text="开启" inactive-text="关闭" />
             </el-form-item>
@@ -35,6 +41,8 @@ import { paxios } from '@/utils/paxios'
 const cardKey = ref({
     appid: '',
     secret: '',
+    name: "",
+    phone: "",
     test: false,
 })
 const loading = ref(false)

@@ -357,6 +357,12 @@ function showAsideChange() {
                   </el-icon>
                   <span>功能设置</span>
                 </el-menu-item>
+                <el-menu-item index="/super/upgrade">
+                  <el-icon class="menu-icon">
+                    <Upload />
+                  </el-icon>
+                  <span>系统升级</span>
+                </el-menu-item>
               </el-sub-menu>
               <el-sub-menu index="9">
                 <template #title>

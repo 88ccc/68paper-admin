@@ -223,6 +223,10 @@ const router = createRouter({
           //用户支付记录
           path:"payrecord",
           component: () => import("@/views/admin/PayRecord.vue"),
+        },{
+          //系统升级
+          path:"upgrade",
+          component: () => import("@/views/admin/Upgrade.vue"),
         }
       ]
     }, {
